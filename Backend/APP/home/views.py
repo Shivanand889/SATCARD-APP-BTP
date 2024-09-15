@@ -46,7 +46,7 @@ def generateOTP(request) :
         send_email('OTP', receiver_email, f'your otp is {otp}')
     
     else :
-        phone = request.data.get('phoneNumber')
+        phone = request.data.get('phone')
         if Users.objects.filter(phoneNumber=phone).exists():
             return Response({'status': 0}, status=400)
         request.session['phone'] = phone
@@ -77,6 +77,24 @@ def LoginViaEmail(request):
         user = Users.objects.get(email=email)
     except Users.DoesNotExist:
         return Response({'message': 'Email not found'}, status=404)
+
+    hashed_password = make_password(password)
+    if password != user.password :
+        return Response({'message': 'Incorrect password'}, status=400)
+
+    return Response({'message': 'Login successful'}, status=200)
+
+
+@api_view(['POST'])
+def LoginViaPhone(request):
+    phone = request.data.get('phone')
+    password = request.data.get('password')
+
+
+    try:
+        user = Users.objects.get(phoneNumber=phone)
+    except Users.DoesNotExist:
+        return Response({'message': 'phone not found'}, status=404)
 
     hashed_password = make_password(password)
     if password != user.password :

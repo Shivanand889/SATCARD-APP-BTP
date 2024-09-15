@@ -5,6 +5,9 @@ from sib_api_v3_sdk.rest import ApiException
 from django.conf import settings
 import requests
 from twilio.rest import Client
+import http.client
+import json
+
 
 def send_email(subject, email,message):
    
@@ -42,16 +45,13 @@ def send_email(subject, email,message):
 
 def sendSMS(phone, message):
 
-    url = "https://www.fast2sms.com/dev/bulkV2"
-    payload = {
-        'authorization': 'cTQ8rnNFXspyLAlwBUGabJVY296PR1vCmZfEOI4egxhW7t3qHiMdz7P0L3yY9aOGwqV2bKspBiJ4F8oR',
-        'message': message,
-        'language': 'english',
-        'route': 'q',
-        'numbers': phone,
-    }
-    headers = {
-        'cache-control': "no-cache"
-    }
-    response = requests.request("POST", url, data=payload, headers=headers)
-    print(response.text)
+    account_sid = 'AC983ad54e8864663b786aa13247ce29e6'
+    auth_token = 'd59f9e7c87952b97ee84608fb9da15ea'
+    client = Client(account_sid ,auth_token)
+
+    message = client.messages.create(
+        body = message ,
+        from_ = '+1 617 934 6967',
+        to = phone
+    )
+    print(message.body)

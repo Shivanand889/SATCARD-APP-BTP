@@ -11,28 +11,22 @@ from django.contrib.auth import logout
 
 
 @api_view(['POST'])
-def SignupViaEmail(request):
+def Signup(request):
     name = request.data.get('name')
     # email = request.data.get('email')
     password = request.data.get('password')
     # phone_number = request.data.get('phoneNumber')
     
-    # Check if email already exists in the Users table
-    if Users.objects.filter(email=email).exists():
-        return Response({'signup error': 'email already exists'}, status=400)
-    
-    # Hash the password before saving
     hashed_password = make_password(password)
     
-    # Create and save new user with hashed password
     user = Users.objects.create(
         name=name,
         email=request.session['email'],
-        password=hashed_password,  # Storing hashed password
+        password=hashed_password,  
         phoneNumber=request.session['phone']
     )
     
-    # Return the user's ID or relevant data
+
     return Response({'id': user.id, 'name': user.name, 'email': user.email}, status=201)
 
 @api_view(['POST'])
@@ -44,12 +38,17 @@ def generateOTP(request) :
     
     
     if(type =='1'):
+
         receiver_email = request.data.get('email')
+        if Users.objects.filter(email=receiver_email).exists():
+            return Response({'status': 0}, status=400)
         request.session['email'] = receiver_email
-        send_email('aa', '112101045@smail.iitpkd.ac.in', f'{otp}')
+        send_email('OTP', receiver_email, f'your otp is {otp}')
     
     else :
         phone = request.data.get('phoneNumber')
+        if Users.objects.filter(phoneNumber=phone).exists():
+            return Response({'status': 0}, status=400)
         request.session['phone'] = phone
         sendSMS(phone, f'your otp is {otp}')
     return Response({'status' : 'done'})
@@ -61,6 +60,7 @@ def CheckOTP(request) :
     otp = int(request.data.get('otp'))
     
     if(otp == request.session['otp']):
+        
         return Response({'success' : 1}) 
     
     else :

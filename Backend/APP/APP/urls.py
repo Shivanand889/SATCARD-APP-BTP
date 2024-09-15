@@ -19,7 +19,7 @@ from django.urls import path, include
 from home.views import *
 
 urlpatterns = [
-    path('signup',SignupViaEmail, name = 'SignupViaEmail'),
+    path('signup',Signup, name = 'Signup'),
     path('otp',generateOTP, name = 'generateOTP'),
     path('verifyOTP',CheckOTP, name = 'CheckOTP'),
     path('Login',LoginViaEmail, name = 'LoginViaEmail'),

@@ -33,7 +33,7 @@ def send_email(subject, email,message):
         api_response = api_instance.send_transac_email({
             "sender": sender,
             "to": receiver,
-            "subject": "OTP",
+            "subject": subject,
             "textContent": email_content,
         })
         print("Email sent successfully:", api_response)
@@ -48,10 +48,10 @@ def sendSMS(phone, message):
     account_sid = 'AC983ad54e8864663b786aa13247ce29e6'
     auth_token = 'd59f9e7c87952b97ee84608fb9da15ea'
     client = Client(account_sid ,auth_token)
-
-    message = client.messages.create(
+    
+    Message = client.messages.create(
         body = message ,
         from_ = '+1 617 934 6967',
         to = phone
     )
-    print(message.body)
+    print(Message.body)

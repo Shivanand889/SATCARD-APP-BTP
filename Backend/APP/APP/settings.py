@@ -30,6 +30,7 @@ ALLOWED_HOSTS = []
 
 # Application definition
 
+SITE_ID = 1
 INSTALLED_APPS = [
     'django.contrib.admin',
     'django.contrib.auth',
@@ -38,9 +39,24 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'rest_framework',
+    "django.contrib.sites",
+    "allauth",
+    "allauth.account",
+    "allauth.socialaccount",
+    "allauth.socialaccount.providers.google",
     'home',
 ]
 
+SOCIALACCOUNT_PROVIDERS = {
+    "google" :{
+        'APP' :{
+            'client_id' : '461660168890-f6vgg5rc3uue8hfjb0t5fjsb8ht48r4c.apps.googleusercontent.com' ,
+            'secret' : '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',
+        },
+        "SCOPE" :["profile", "email"],
+        "AUTH_PARAMS" : {"acces_type" : "online"}
+    }
+}
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
@@ -49,7 +65,9 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'allauth.account.middleware.AccountMiddleware',  # Add this line
 ]
+
 
 ROOT_URLCONF = 'APP.urls'
 
@@ -127,3 +145,11 @@ STATIC_URL = 'static/'
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+AUTHENTICATION_BACKENDS = (
+    'django.contrib.auth.backends.ModelBackend',  # Required for admin login
+    'allauth.account.auth_backends.AuthenticationBackend',  # Allauth authentication
+)
+
+LOGIN_REDIRECT_URL = "/"
+LOGOUT_REDIRECT_URL = "/"

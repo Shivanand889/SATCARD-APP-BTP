@@ -1,1 +1,0 @@
-# SATCARD-APP-BTP

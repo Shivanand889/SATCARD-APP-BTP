@@ -4,6 +4,7 @@ import 'package:app/screens/signin_screen.dart';
 import 'package:app/screens/signup_screen.dart';
 import 'package:app/screens/reset_password_screen.dart';
 import 'package:app/screens/otp_screen.dart';
+import 'package:app/screens/setup_profile.dart';
 
 void main() {
   runApp(const MyApp());
@@ -28,6 +29,7 @@ class MyApp extends StatelessWidget {
         '/signup': (context) => const SignUpScreen(),
         '/forgot-password': (context) => const ForgotPasswordScreen(),
         '/otp': (context) => const OtpScreen(),
+        '/setup-profile': (context) => const SetupProfileScreen(),
       },
     );
   }

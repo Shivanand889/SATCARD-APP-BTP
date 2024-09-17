@@ -68,7 +68,6 @@ class _LoginScreenState extends State<LoginScreen> {
                 ),
               const SizedBox(height: 20),
 
-              if (isEmailLogin) 
                 TextFormField(
                   controller: _passwordController,
                   decoration: const InputDecoration(
@@ -93,7 +92,7 @@ class _LoginScreenState extends State<LoginScreen> {
               // Login Button
               ElevatedButton(
                 onPressed: () {
-                  Navigator.pushNamed(context, '/otp');
+                  Navigator.pushNamed(context, '/');
                 },
                 style: ElevatedButton.styleFrom(
                   padding: const EdgeInsets.symmetric(horizontal: 60, vertical: 15),

@@ -32,14 +32,6 @@ class SignUpScreen extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
               TextField(
-                controller: _emailController,
-                decoration: const InputDecoration(
-                  labelText: 'Email',
-                  border: OutlineInputBorder(),
-                ),
-              ),
-              const SizedBox(height: 20),
-              TextField(
                 controller: _mobileController,
                 decoration: const InputDecoration(
                   labelText: 'Mobile Number',
@@ -47,18 +39,9 @@ class SignUpScreen extends StatelessWidget {
                 ),
               ),
               const SizedBox(height: 20),
-              TextField(
-                controller: _passwordController,
-                decoration: const InputDecoration(
-                  labelText: 'Password',
-                  border: OutlineInputBorder(),
-                ),
-                obscureText: true,
-              ),
-              const SizedBox(height: 20),
               ElevatedButton(
                 onPressed: () {
-                  // Implement sign up logic here
+                  Navigator.pushNamed(context, '/otp');
                 },
                 style: ElevatedButton.styleFrom(
                   padding: const EdgeInsets.symmetric(horizontal: 60, vertical: 15),
@@ -66,7 +49,7 @@ class SignUpScreen extends StatelessWidget {
                     borderRadius: BorderRadius.circular(10.0), // Rounded button
                   ),
                 ),
-                child: const Text('Sign Up'),
+                child: const Text('Get OTP'),
               ),
             ],
           ),

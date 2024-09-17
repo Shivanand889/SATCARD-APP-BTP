@@ -47,7 +47,7 @@ class OtpScreen extends StatelessWidget {
               const SizedBox(height: 20),
               ElevatedButton(
                 onPressed: () {
-                  // Implement OTP verification logic here
+                  Navigator.pushNamed(context, '/setup-profile');
                 },
                 style: ElevatedButton.styleFrom(
                   padding: const EdgeInsets.symmetric(horizontal: 60, vertical: 15),

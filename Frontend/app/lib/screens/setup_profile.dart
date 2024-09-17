@@ -1,5 +1,6 @@
+import 'dart:convert'; // To use jsonEncode
 import 'package:flutter/material.dart';
-import 'package:app/widgets/custom_scarffold.dart'; // Make sure you have the custom scaffold
+import 'package:http/http.dart' as http; // Import the http package
 
 class SetupProfileScreen extends StatefulWidget {
   const SetupProfileScreen({Key? key}) : super(key: key);
@@ -13,11 +14,58 @@ class _SetupProfileScreenState extends State<SetupProfileScreen> {
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   bool _obscurePassword = true; // For password visibility toggle
+  Future<void> _handleSignup() async {
+    final name = _nameController.text;
+    final email = _emailController.text;
+    final password = _passwordController.text;
+
+    if (name.isEmpty || email.isEmpty || password.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Please fill in all fields')),
+      );
+    } else {
+      try {
+        // Sending a POST request to the server
+        var response = await http.post(
+          Uri.parse('http://127.0.0.1:8000/otp?type=1'),
+          headers: <String, String>{
+            'Content-Type': 'application/json; charset=UTF-8',
+          },
+          body: jsonEncode(<String, String>{
+            'name': name,
+            'email': email,
+            'password': password,
+          }),
+        );
+
+        if (response.statusCode == 200) {
+          // Navigate to the OTP screen on success
+          Navigator.pushNamed(context, '/otp');
+        } else {
+          // Show error message if the status code isn't 200
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Error: ${response.statusCode}')),
+          );
+        }
+      } catch (e) {
+        // Show an error message in case of a failure
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Failed to sign up: $e')),
+        );
+      }
+    }
+  }
+
+  // Google Sign-Up Button Handler
+  void _handleGoogleSignup() {
+    // Add Google Sign-In logic here
+    print('Google Sign-Up initiated');
+  }
 
   @override
   Widget build(BuildContext context) {
-    return CustomScaffold(
-      child: Center(
+    return Scaffold(
+      body: Center(
         child: Container(
           padding: const EdgeInsets.all(16.0),
           width: MediaQuery.of(context).size.width * 0.85, // 85% of the screen width
@@ -129,25 +177,5 @@ class _SetupProfileScreenState extends State<SetupProfileScreen> {
   }
 
   // Sign-Up Button Handler
-  void _handleSignup() {
-    final name = _nameController.text;
-    final email = _emailController.text;
-    final password = _passwordController.text;
-
-    if (name.isEmpty || email.isEmpty || password.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please fill in all fields')),
-      );
-    } else {
-      // Implement sign-up logic here (e.g., send data to the server)
-      Navigator.pushNamed(context, '/otp');
-      // print('Signing up with Name: $name, Email: $email, Password: $password');
-    }
-  }
-
-  // Google Sign-Up Button Handler
-  void _handleGoogleSignup() {
-    // Add Google Sign-In logic here
-    print('Google Sign-Up initiated');
-  }
+  
 }

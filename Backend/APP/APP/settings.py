@@ -26,7 +26,7 @@ SECRET_KEY = 'django-insecure-#+!jqpy&5!lm@as&o1e-au9bs_n-cdyi+4bwlr%*4ec6os$7eo
 DEBUG = True
 
 ALLOWED_HOSTS = []
-
+# SESSION_ENGINE = 'django.contrib.sessions.backends.db'  # Use the database-backed session engine
 
 # Application definition
 
@@ -45,6 +45,7 @@ INSTALLED_APPS = [
     "allauth.socialaccount",
     "allauth.socialaccount.providers.google",
     'home',
+    'corsheaders',
 ]
 
 SOCIALACCOUNT_PROVIDERS = {
@@ -65,9 +66,18 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    'allauth.account.middleware.AccountMiddleware',  # Add this line
+    'allauth.account.middleware.AccountMiddleware',
+    'corsheaders.middleware.CorsMiddleware',
+    
 ]
 
+CORS_ALLOWED_ORIGINS = [
+    'http://localhost:62253',  # Replace with the origin of your Flutter web app if different
+    'http://127.0.0.1:8000',
+]
+
+
+CORS_ALLOW_ALL_ORIGINS = True
 
 ROOT_URLCONF = 'APP.urls'
 
@@ -153,3 +163,15 @@ AUTHENTICATION_BACKENDS = (
 
 LOGIN_REDIRECT_URL = "/"
 LOGOUT_REDIRECT_URL = "/"
+
+SESSION_ENGINE = "django.contrib.sessions.backends.cache"
+SESSION_CACHE_ALIAS = "default"  # or comfortabley anything else
+CACHES = {
+    'default': {
+        "BACKEND": "django_redis.cache.RedisCache",
+        "LOCATION": "redis://127.0.0.1:6379/1",
+        "OPTIONS": {
+              "CLIENT_CLASS": "django_redis.client.DefaultClient",
+        }
+     }
+}

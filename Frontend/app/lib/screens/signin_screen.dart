@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
+
 import 'package:app/widgets/custom_scarffold.dart';
 
 class LoginScreen extends StatefulWidget {
@@ -13,28 +16,68 @@ class _LoginScreenState extends State<LoginScreen> {
   final _passwordController = TextEditingController();
   final _mobileController = TextEditingController();
   bool isEmailLogin = true;
+  String errorMessage = '';
+
+  Future<void> _login() async {
+    final url = isEmailLogin
+        ? 'http://127.0.0.1:8000/loginEmail'
+        : 'http://127.0.0.1:8000/loginPhone';
+    
+    final data = isEmailLogin
+        ? {
+            'email': _emailController.text,
+            'password': _passwordController.text,
+          }
+        : {
+            'phone': _mobileController.text,
+            'password': _passwordController.text,
+          };
+
+    try {
+      final response = await http.post(
+        Uri.parse(url),
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode(data),
+      );
+
+      final responseBody = jsonDecode(response.body);
+
+      if (response.statusCode == 200 && responseBody['success'] == 1) {
+        // Redirect to another page on successful login
+        Navigator.pushNamed(context, '/');
+      } else {
+        setState(() {
+          errorMessage = responseBody['message'] ?? 'Login failed';
+        });
+      }
+    } catch (e) {
+      setState(() {
+        errorMessage = 'An error occurred. Please try again.';
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     return CustomScaffold(
-      child: Center( // Center the entire container in the middle of the screen
+      child: Center(
         child: Container(
           padding: const EdgeInsets.all(16.0),
-          width: MediaQuery.of(context).size.width * 0.85, // Make the container 85% of the screen width
-          constraints: const BoxConstraints(maxWidth: 400), // Max width constraint for larger screens
+          width: MediaQuery.of(context).size.width * 0.85,
+          constraints: const BoxConstraints(maxWidth: 400),
           decoration: BoxDecoration(
-            color: Colors.white, // Set a light background for the container
-            borderRadius: BorderRadius.circular(15.0), // Rounded corners
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(15.0),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withOpacity(0.1), // Slight shadow for elevation effect
+                color: Colors.black.withOpacity(0.1),
                 blurRadius: 10.0,
                 offset: const Offset(0, 5),
               ),
             ],
           ),
           child: Column(
-            mainAxisSize: MainAxisSize.min, // Make the container as big as its contents
+            mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
               // Switch between Email and Mobile login
@@ -68,14 +111,25 @@ class _LoginScreenState extends State<LoginScreen> {
                 ),
               const SizedBox(height: 20),
 
-                TextFormField(
-                  controller: _passwordController,
-                  decoration: const InputDecoration(
-                    labelText: 'Password',
-                    border: OutlineInputBorder(),
-                  ),
-                  obscureText: true,
+              TextFormField(
+                controller: _passwordController,
+                decoration: const InputDecoration(
+                  labelText: 'Password',
+                  border: OutlineInputBorder(),
                 ),
+                obscureText: true,
+              ),
+
+              // Error message display
+              if (errorMessage.isNotEmpty)
+                Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 10.0),
+                  child: Text(
+                    errorMessage,
+                    style: const TextStyle(color: Colors.red),
+                  ),
+                ),
+              const SizedBox(height: 20),
 
               // Forgot Password link
               Align(
@@ -91,13 +145,11 @@ class _LoginScreenState extends State<LoginScreen> {
 
               // Login Button
               ElevatedButton(
-                onPressed: () {
-                  Navigator.pushNamed(context, '/');
-                },
+                onPressed: _login,
                 style: ElevatedButton.styleFrom(
                   padding: const EdgeInsets.symmetric(horizontal: 60, vertical: 15),
                   shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(10.0), // Rounded button
+                    borderRadius: BorderRadius.circular(10.0),
                   ),
                 ),
                 child: const Text('Login'),

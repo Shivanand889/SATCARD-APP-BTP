@@ -23,7 +23,8 @@ dependencies:
   http_interceptor: ^1.0.0  # Package for managing HTTP requests and cookies
   google_sign_in: ^6.0.0
   webview_flutter: ^4.0.0
-
+  url_launcher: ^6.0.9
+  
 dev_dependencies:
   flutter_test:
     sdk: flutter

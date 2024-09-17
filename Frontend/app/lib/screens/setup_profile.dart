@@ -1,6 +1,8 @@
 import 'dart:convert'; // To use jsonEncode
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http; // Import the http package
+// import 'package:google_sign_in/google_sign_in.dart';
+import 'package:url_launcher/url_launcher.dart'; // Import url_launcher package
 
 class SetupProfileScreen extends StatefulWidget {
   const SetupProfileScreen({Key? key}) : super(key: key);
@@ -13,6 +15,7 @@ class _SetupProfileScreenState extends State<SetupProfileScreen> {
   final _nameController = TextEditingController();
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
+  // final GoogleSignIn _googleSignIn = GoogleSignIn(); // Initialize GoogleSignIn
   bool _obscurePassword = true; // For password visibility toggle
   Future<void> _handleSignup() async {
     final name = _nameController.text;
@@ -57,10 +60,18 @@ class _SetupProfileScreenState extends State<SetupProfileScreen> {
   }
 
   // Google Sign-Up Button Handler
-  void _handleGoogleSignup() {
-    // Add Google Sign-In logic here
-    print('Google Sign-Up initiated');
+  Future<void> _handleGoogleSignup() async {
+    final url = Uri.parse('http://127.0.0.1:8000/accounts/google/login/');
+
+    if (await canLaunchUrl(url)) {
+      await launchUrl(url);
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Could not launch URL')),
+      );
+    }
   }
+
 
   @override
   Widget build(BuildContext context) {

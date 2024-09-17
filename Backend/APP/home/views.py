@@ -8,7 +8,9 @@ from .sendOTPS import *
 from django.contrib.auth import logout
 from django.core.cache import cache
 
-
+from django.http import JsonResponse
+from google.oauth2 import id_token
+from google.auth.transport import requests
 
 
 @api_view(['POST'])
@@ -147,4 +149,4 @@ def LoginViaPhone(request):
 
 
 
-    
+

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
-
+import 'package:url_launcher/url_launcher.dart'; 
 import 'package:app/widgets/custom_scarffold.dart';
 
 class LoginScreen extends StatefulWidget {
@@ -57,6 +57,17 @@ class _LoginScreenState extends State<LoginScreen> {
     }
   }
 
+  Future<void> _LoginGoogle() async {
+    final url = Uri.parse('http://127.0.0.1:8000/accounts/google/login/');
+
+    if (await canLaunchUrl(url)) {
+      await launchUrl(url);
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Could not launch URL')),
+      );
+    }
+  }
   @override
   Widget build(BuildContext context) {
     return CustomScaffold(
@@ -158,7 +169,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
               // Google Login Button
               ElevatedButton.icon(
-                onPressed: () {},
+                onPressed: _LoginGoogle,
                 icon: const Icon(Icons.g_mobiledata),
                 label: const Text('Login with Google'),
                 style: ElevatedButton.styleFrom(

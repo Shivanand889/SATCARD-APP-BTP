@@ -17,6 +17,7 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path, include
 from home.views import *
+from django.views.generic.base import RedirectView
 
 urlpatterns = [
     path('signup',Signup, name = 'Signup'),
@@ -27,4 +28,5 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     # path("", include('googleauthentication.urls')),
     path("accounts/", include("allauth.urls")),
+    path('', RedirectView.as_view(url='http://localhost:62253/', permanent=False), name='home_redirect'),
 ]

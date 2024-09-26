@@ -8,37 +8,14 @@ from .sendOTPS import *
 from django.contrib.auth import logout
 from django.core.cache import cache
 
-from django.http import JsonResponse
-from google.oauth2 import id_token
-from google.auth.transport import requests
-
-
-@api_view(['POST'])
-def Signup(request):
-    name = request.data.get('name')
-    # email = request.data.get('email')
-    password = request.data.get('password')
-    # phone_number = request.data.get('phoneNumber')
-    
-    hashed_password = make_password(password)
-    
-    user = Users.objects.create(
-        name=name,
-        email=request.session['email'],
-        password=hashed_password,  
-        phoneNumber=request.session['phone']
-    )
-    
-
-    return Response({'id': user.id, 'name': user.name, 'email': user.email}, status=201)
 
 @api_view(['POST'])
 def generateOTP(request) :
     type = request.GET.get('type','')
-
+    
     otp = random.randint(100000,999999)
     # request.cache['otp'] = otp
-    cache.set('otp', otp, timeout=None)
+    cache.set('otp', otp, timeout=600)
     # request.session.save()
     # print(request.session['otp'])
     
@@ -79,6 +56,8 @@ def CheckOTP(request) :
     print(cache.get('email'))
     print("aaa")
     otp = int(request.data.get('otp'))
+    if(request.data.get('otp') == None) :
+        return Response({'status': 0, 'message' : 'otp timeout'}, status=500)
     # otp = request.session.get('phone')
     print(otp)
     succ = 0 
@@ -158,4 +137,6 @@ def gauth(request):
     print(email)
     return Response({'success': True, 'message': 'Google authentication successful', 'email': email}, status=200)
     
+
+
 

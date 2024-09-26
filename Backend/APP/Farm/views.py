@@ -1,3 +1,32 @@
-from django.shortcuts import render
+from django.shortcuts import render, redirect
+from rest_framework.decorators import api_view
+from rest_framework.response import Response
+from .models import Farms
+from .serializers import FarmsSerializer
+from django.contrib.auth import logout
+from django.core.cache import cache
 
-# Create your views here.
+
+@api_view(['POST'])
+def AddFarm(request):
+    name = request.data.get('name')
+    cropName = request.data.get('crop')
+    latitude = request.data.get('latitude')
+    longitude = request.data.get('longitude')
+    location = request.data.get('location')
+
+    if Farms.objects.filter(name=name).exists():
+        return Response({'message' : 'Farm already exit'}, status=500)
+
+    farm = Farms.objects.create(
+        name=name,
+        cropName=cropName,
+        latitude= latitude,  
+        longitude= longitude,  
+        location = location,
+        email=cache.get('email')
+    )
+
+    return Response({'message' : 'Farm created succesfully'}, status=200)
+
+    

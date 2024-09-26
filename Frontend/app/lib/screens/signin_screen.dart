@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
-import 'package:url_launcher/url_launcher.dart'; 
 import 'package:app/widgets/custom_scarffold.dart';
+import 'package:google_sign_in/google_sign_in.dart';
+import 'package:logging/logging.dart';  // Import the logging package
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -17,6 +18,17 @@ class _LoginScreenState extends State<LoginScreen> {
   final _mobileController = TextEditingController();
   bool isEmailLogin = true;
   String errorMessage = '';
+
+  // Create an instance of GoogleSignIn
+  final GoogleSignIn googleSignIn = GoogleSignIn(
+    scopes: [
+      'email', // Include this scope to request access to the email address
+      'profile', // Include this scope to request access to the user's profile information
+    ],
+  );
+
+  // Set up a logger
+  final Logger _logger = Logger('LoginScreenLogger');
 
   Future<void> _login() async {
     final url = isEmailLogin
@@ -43,14 +55,17 @@ class _LoginScreenState extends State<LoginScreen> {
       final responseBody = jsonDecode(response.body);
 
       if (response.statusCode == 200 && responseBody['success'] == 1) {
+        _logger.info('Login successful');
         // Redirect to another page on successful login
         Navigator.pushNamed(context, '/');
       } else {
+        _logger.warning('Login failed: ${responseBody['message'] ?? 'Unknown error'}');
         setState(() {
           errorMessage = responseBody['message'] ?? 'Login failed';
         });
       }
     } catch (e) {
+      _logger.severe('An error occurred during login: $e');
       setState(() {
         errorMessage = 'An error occurred. Please try again.';
       });
@@ -58,16 +73,54 @@ class _LoginScreenState extends State<LoginScreen> {
   }
 
   Future<void> _LoginGoogle() async {
-    final url = Uri.parse('http://127.0.0.1:8000/accounts/google/login/');
+    print("1") ;
+    try {
+      // Initiate the sign-in process
+      _logger.info('Starting Google sign-in');
+      
+      final GoogleSignInAccount? googleUser = await googleSignIn.signIn();
 
-    if (await canLaunchUrl(url)) {
-      await launchUrl(url);
-    } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Could not launch URL')),
+      if (googleUser == null) {
+        _logger.info('Google sign-in canceled by the user.');
+        return;
+      }
+
+      // Obtain the auth details from the request
+      final String displayName = googleUser.displayName ?? "No name";
+      final String email = googleUser.email;
+      _logger.info('Google ID Token received: $displayName');
+      _logger.info('Google Access Token received: $email');
+
+     
+      final response = await http.post(
+        Uri.parse('http://127.0.0.1:8000/gauth'),
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: jsonEncode({
+          'name': displayName,
+          'email': email,
+        }),
       );
+
+      if (response.statusCode == 200) {
+        _logger.info('Google login successful');
+        // Handle successful login or signup
+        Navigator.pushNamed(context, '/');
+      } else {
+        _logger.warning('Google login failed: ${response.body}');
+        setState(() {
+          errorMessage = 'Google login failed: ${response.body}';
+        });
+      }
+    } catch (e) {
+      _logger.severe('An error occurred during Google login: $e');
+      setState(() {
+        errorMessage = 'An error occurred during Google login: $e';
+      });
     }
   }
+
   @override
   Widget build(BuildContext context) {
     return CustomScaffold(
@@ -91,7 +144,6 @@ class _LoginScreenState extends State<LoginScreen> {
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              // Switch between Email and Mobile login
               SwitchListTile(
                 title: Text(isEmailLogin ? 'Login with Email' : 'Login with Mobile'),
                 value: isEmailLogin,
@@ -102,8 +154,6 @@ class _LoginScreenState extends State<LoginScreen> {
                 },
               ),
               const SizedBox(height: 20),
-
-              // Email or Mobile Number TextField
               if (isEmailLogin)
                 TextFormField(
                   controller: _emailController,
@@ -121,7 +171,6 @@ class _LoginScreenState extends State<LoginScreen> {
                   ),
                 ),
               const SizedBox(height: 20),
-
               TextFormField(
                 controller: _passwordController,
                 decoration: const InputDecoration(
@@ -130,8 +179,6 @@ class _LoginScreenState extends State<LoginScreen> {
                 ),
                 obscureText: true,
               ),
-
-              // Error message display
               if (errorMessage.isNotEmpty)
                 Padding(
                   padding: const EdgeInsets.symmetric(vertical: 10.0),
@@ -141,8 +188,6 @@ class _LoginScreenState extends State<LoginScreen> {
                   ),
                 ),
               const SizedBox(height: 20),
-
-              // Forgot Password link
               Align(
                 alignment: Alignment.centerRight,
                 child: TextButton(
@@ -153,8 +198,6 @@ class _LoginScreenState extends State<LoginScreen> {
                 ),
               ),
               const SizedBox(height: 20),
-
-              // Login Button
               ElevatedButton(
                 onPressed: _login,
                 style: ElevatedButton.styleFrom(
@@ -166,8 +209,6 @@ class _LoginScreenState extends State<LoginScreen> {
                 child: const Text('Login'),
               ),
               const SizedBox(height: 20),
-
-              // Google Login Button
               ElevatedButton.icon(
                 onPressed: _LoginGoogle,
                 icon: const Icon(Icons.g_mobiledata),
@@ -181,8 +222,6 @@ class _LoginScreenState extends State<LoginScreen> {
                 ),
               ),
               const SizedBox(height: 20),
-
-              // Sign Up prompt
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [

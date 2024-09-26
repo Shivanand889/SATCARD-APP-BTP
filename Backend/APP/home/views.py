@@ -76,6 +76,7 @@ def generateOTP(request) :
 
 @api_view(['POST'])
 def CheckOTP(request) :
+    print(cache.get('email'))
     print("aaa")
     otp = int(request.data.get('otp'))
     # otp = request.session.get('phone')
@@ -148,5 +149,13 @@ def LoginViaPhone(request):
     return Response({'message': 'Login successful', 'success' : 1}, status=200)
 
 
-
+@api_view(['POST'])
+def gauth(request):
+    
+    name = request.data.get('name')
+    email = request.data.get('email')
+    cache.set('email', email, timeout=None)
+    print(email)
+    return Response({'success': True, 'message': 'Google authentication successful', 'email': email}, status=200)
+    
 

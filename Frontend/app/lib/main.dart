@@ -5,9 +5,22 @@ import 'package:app/screens/signup_screen.dart';
 import 'package:app/screens/reset_password_screen.dart';
 import 'package:app/screens/otp_screen.dart';
 import 'package:app/screens/setup_profile.dart';
-
+import 'package:logging/logging.dart';
 void main() {
+  _initializeLogger();
+
   runApp(const MyApp());
+}
+
+void _initializeLogger() {
+  // Set the root logger level
+  Logger.root.level = Level.ALL; // Set the desired log level
+
+  // Listen for log records
+  Logger.root.onRecord.listen((LogRecord rec) {
+    // You can change this to log to a file, remote server, etc.
+    print('${rec.level.name}: ${rec.time}: ${rec.message}');
+  });
 }
 
 class MyApp extends StatelessWidget {

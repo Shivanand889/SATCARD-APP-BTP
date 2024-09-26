@@ -8,10 +8,10 @@ class SignUpScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final _mobileController = TextEditingController();
+    final mobileController = TextEditingController();
 
-    Future<void> _sendOtp() async {
-      final mobileNumber = _mobileController.text;
+    Future<void> sendOtp() async {
+      final mobileNumber = mobileController.text;
       final url = Uri.parse('http://127.0.0.1:8000/otp?type=2'); // Your Django backend URL
 
       try {
@@ -66,7 +66,7 @@ class SignUpScreen extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
               TextField(
-                controller: _mobileController,
+                controller: mobileController,
                 decoration: const InputDecoration(
                   labelText: 'Mobile Number',
                   border: OutlineInputBorder(),
@@ -74,7 +74,7 @@ class SignUpScreen extends StatelessWidget {
               ),
               const SizedBox(height: 20),
               ElevatedButton(
-                onPressed: _sendOtp, // Call the function to send OTP
+                onPressed: sendOtp, // Call the function to send OTP
                 style: ElevatedButton.styleFrom(
                   padding: const EdgeInsets.symmetric(horizontal: 60, vertical: 15),
                   shape: RoundedRectangleBorder(

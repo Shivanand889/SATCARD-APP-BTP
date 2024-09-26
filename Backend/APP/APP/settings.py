@@ -46,6 +46,7 @@ INSTALLED_APPS = [
     "allauth.socialaccount.providers.google",
     'home',
     'corsheaders',
+    'Farm',
 ]
 
 SOCIALACCOUNT_PROVIDERS = {
@@ -55,6 +56,8 @@ SOCIALACCOUNT_PROVIDERS = {
             'secret' : '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',
         },
         "SCOPE" :["profile", "email"],
+        "OAUTH_PKCE_ENABLED": True,  # optional
+        "AUTHENTICATE_URL": "https://accounts.google.com/o/oauth2/auth",
         "AUTH_PARAMS" : {"acces_type" : "online"}
     }
 }
@@ -175,3 +178,4 @@ CACHES = {
         }
      }
 }
+

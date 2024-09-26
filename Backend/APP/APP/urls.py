@@ -19,14 +19,18 @@ from django.urls import path, include
 from home.views import *
 from django.views.generic.base import RedirectView
 
+
+
 urlpatterns = [
     path('signup',Signup, name = 'Signup'),
     path('otp',generateOTP, name = 'generateOTP'),
     path('verifyOTP',CheckOTP, name = 'CheckOTP'),
     path('loginEmail',LoginViaEmail, name = 'LoginViaEmail'),
-     path('loginPhone',LoginViaPhone, name = 'LoginViaPhone'),
+    path('loginPhone',LoginViaPhone, name = 'LoginViaPhone'),
     path('admin/', admin.site.urls),
+    path('gauth', gauth, name = 'gauth'),
     # path("", include('googleauthentication.urls')),
+    # path('accounts/', google_login_redirect, name='google_login'),
     path("accounts/", include("allauth.urls")),
     path('', RedirectView.as_view(url='http://localhost:62253/', permanent=False), name='home_redirect'),
 ]

@@ -6,7 +6,7 @@ class ForgotPasswordScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final _emailController = TextEditingController();
+    final emailController = TextEditingController();
 
     return CustomScaffold(
       child: Center( // Center the entire container in the middle of the screen
@@ -36,7 +36,7 @@ class ForgotPasswordScreen extends StatelessWidget {
               ),
               const SizedBox(height: 20),
               TextField(
-                controller: _emailController,
+                controller: emailController,
                 decoration: const InputDecoration(
                   labelText: 'Email',
                   border: OutlineInputBorder(),

@@ -3,10 +3,11 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http; // Import the http package
 // import 'package:google_sign_in/google_sign_in.dart';
 import 'package:url_launcher/url_launcher.dart'; // Import url_launcher package
+import 'package:google_sign_in/google_sign_in.dart';
 
 class SetupProfileScreen extends StatefulWidget {
-  const SetupProfileScreen({Key? key}) : super(key: key);
-
+  const SetupProfileScreen({super.key});
+  
   @override
   _SetupProfileScreenState createState() => _SetupProfileScreenState();
 }
@@ -17,6 +18,12 @@ class _SetupProfileScreenState extends State<SetupProfileScreen> {
   final _passwordController = TextEditingController();
   // final GoogleSignIn _googleSignIn = GoogleSignIn(); // Initialize GoogleSignIn
   bool _obscurePassword = true; // For password visibility toggle
+  final GoogleSignIn googleSignIn = GoogleSignIn(
+    scopes: [
+      'email', // Include this scope to request access to the email address
+      'profile', // Include this scope to request access to the user's profile information
+    ],
+  );
   Future<void> _handleSignup() async {
     final name = _nameController.text;
     final email = _emailController.text;
@@ -61,14 +68,46 @@ class _SetupProfileScreenState extends State<SetupProfileScreen> {
 
   // Google Sign-Up Button Handler
   Future<void> _handleGoogleSignup() async {
-    final url = Uri.parse('http://127.0.0.1:8000/accounts/google/login/');
+    try {
+      // Initiate the sign-in process
+      print('Starting Google sign-in');
+      
+      final GoogleSignInAccount? googleUser = await googleSignIn.signIn();
 
-    if (await canLaunchUrl(url)) {
-      await launchUrl(url);
-    } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Could not launch URL')),
+      if (googleUser == null) {
+        print('Google sign-in canceled by the user.');
+        return;
+      }
+
+      // Obtain the auth details from the request
+      final String displayName = googleUser.displayName ?? "No name";
+      final String email = googleUser.email;
+      print('Google ID Token received: $displayName');
+      print('Google Access Token received: $email');
+
+     
+      final response = await http.post(
+        Uri.parse('http://127.0.0.1:8000/gauth'),
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: jsonEncode({
+          'name': displayName,
+          'email': email,
+        }),
       );
+
+      if (response.statusCode == 200) {
+        print('Google login successful');
+        // Handle successful login or signup
+        Navigator.pushNamed(context, '/');
+      } else {
+        print('Google login failed: ${response.body}');
+       
+      }
+    } catch (e) {
+      print('An error occurred during Google login: $e');
+      
     }
   }
 

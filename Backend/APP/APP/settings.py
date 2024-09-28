@@ -47,6 +47,7 @@ INSTALLED_APPS = [
     'home',
     'corsheaders',
     'Farm',
+    'activity',
 ]
 
 SOCIALACCOUNT_PROVIDERS = {

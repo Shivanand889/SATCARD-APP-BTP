@@ -22,7 +22,6 @@ from django.views.generic.base import RedirectView
 
 
 urlpatterns = [
-    path('signup',Signup, name = 'Signup'),
     path('otp',generateOTP, name = 'generateOTP'),
     path('verifyOTP',CheckOTP, name = 'CheckOTP'),
     path('loginEmail',LoginViaEmail, name = 'LoginViaEmail'),

@@ -11,11 +11,12 @@ from django.core.cache import cache
 
 @api_view(['POST'])
 def generateOTP(request) :
+    # print(1) 
     type = request.GET.get('type','')
     
     otp = random.randint(100000,999999)
     # request.cache['otp'] = otp
-    cache.set('otp', otp, timeout=600)
+    cache.set('otp', otp, timeout=5*60)
     # request.session.save()
     # print(request.session['otp'])
     
@@ -90,23 +91,34 @@ def CheckOTP(request) :
 @api_view(['POST'])
 def LoginViaEmail(request):
     email = request.data.get('email')
-    password = request.data.get('password')
+
+    if request.data.get('type')=='1' : 
+        password = request.data.get('password')
 
 
-    try:
-        user = Users.objects.get(email=email)
-    except Users.DoesNotExist:
-        return Response({'message': 'Email not found', 'success' : 0}, status=404)
+        try:
+            user = Users.objects.get(email=email)
+        except Users.DoesNotExist:
+            return Response({'message': 'Email not found', 'success' : 0}, status=404)
 
-    # hashed_password = make_password(password)
-    print(len(cache.get('password')))
-    print(len(password))
-    if password != user.password :
-        print(1)
-        return Response({'message': 'Incorrect password','success' : 0}, status=400)
+        # hashed_password = make_password(password)
+        print(len(cache.get('password')))
+        print(len(password))
+        if password != user.password :
+            print(1)
+            return Response({'message': 'Incorrect password','success' : 0}, status=400)
 
-    cache.set('email', email, timeout=None)
-    return Response({'message': 'Login successful','success' : 1},  status=200)
+        cache.set('email', email, timeout=None)
+        return Response({'message': 'Login successful','success' : 1},  status=200)
+
+    else :
+        
+        try:
+            print("g1")
+            user = Users.objects.get(email=email)
+            return Response({'message': 'Login successful','success' : 1},  status=200)
+        except Users.DoesNotExist:
+            return Response({'message': 'Email not found', 'success' : 0}, status=404)
 
 
 @api_view(['POST'])
@@ -135,6 +147,13 @@ def gauth(request):
     email = request.data.get('email')
     cache.set('email', email, timeout=None)
     print(email)
+    user = Users.objects.create(
+        name=cache.get('name'),
+        email=cache.get('email'),
+        # password=cache.get('default'),  
+        password = 'default',
+        phoneNumber=cache.get('phone')
+    )
     return Response({'success': True, 'message': 'Google authentication successful', 'email': email}, status=200)
     
 

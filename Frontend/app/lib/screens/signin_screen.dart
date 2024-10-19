@@ -39,6 +39,7 @@ class _LoginScreenState extends State<LoginScreen> {
         ? {
             'email': _emailController.text,
             'password': _passwordController.text,
+            'type' : '1',
           }
         : {
             'phone': _mobileController.text,
@@ -93,13 +94,14 @@ class _LoginScreenState extends State<LoginScreen> {
 
      
       final response = await http.post(
-        Uri.parse('http://127.0.0.1:8000/gauth'),
+        Uri.parse('http://127.0.0.1:8000/loginEmail'),
         headers: {
           'Content-Type': 'application/json',
         },
         body: jsonEncode({
-          'name': displayName,
+          // 'name': displayName,
           'email': email,
+          'type' : '2',
         }),
       );
 
@@ -111,12 +113,14 @@ class _LoginScreenState extends State<LoginScreen> {
         _logger.warning('Google login failed: ${response.body}');
         setState(() {
           errorMessage = 'Google login failed: ${response.body}';
+          return ;
         });
       }
     } catch (e) {
       _logger.severe('An error occurred during Google login: $e');
       setState(() {
         errorMessage = 'An error occurred during Google login: $e';
+        return ;
       });
     }
   }

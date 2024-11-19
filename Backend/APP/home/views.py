@@ -83,7 +83,7 @@ def CheckOTP(request) :
             phoneNumber=cache.get('phone')
         )
 
-        return Response({'success': succ, 'redirect_url': '/'}, status=200)
+        return Response({'success': succ, 'redirect_url': '/dashboard'}, status=200)
     
     else :
         return Response({'success': succ, 'redirect_url': '/setup-profile'}, status=200)
@@ -148,7 +148,7 @@ def gauth(request):
     cache.set('email', email, timeout=None)
     print(email)
     user = Users.objects.create(
-        name=cache.get('name'),
+        name=name,
         email=cache.get('email'),
         # password=cache.get('default'),  
         password = 'default',

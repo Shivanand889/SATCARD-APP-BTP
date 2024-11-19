@@ -1,3 +1,4 @@
+import 'package:app/screens/dashboard.dart';
 import 'package:flutter/material.dart';
 import 'package:app/screens/welcome_screen.dart';
 import 'package:app/screens/signin_screen.dart';
@@ -43,6 +44,8 @@ class MyApp extends StatelessWidget {
         '/forgot-password': (context) => const ForgotPasswordScreen(),
         '/otp': (context) => const OtpScreen(),
         '/setup-profile': (context) => const SetupProfileScreen(),
+        '/dashboard': (context) => const Dashboard(),
+        
       },
     );
   }

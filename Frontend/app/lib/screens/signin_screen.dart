@@ -58,7 +58,7 @@ class _LoginScreenState extends State<LoginScreen> {
       if (response.statusCode == 200 && responseBody['success'] == 1) {
         _logger.info('Login successful');
         // Redirect to another page on successful login
-        Navigator.pushNamed(context, '/');
+        Navigator.pushNamed(context, '/dashboard');
       } else {
         _logger.warning('Login failed: ${responseBody['message'] ?? 'Unknown error'}');
         setState(() {
@@ -108,7 +108,7 @@ class _LoginScreenState extends State<LoginScreen> {
       if (response.statusCode == 200) {
         _logger.info('Google login successful');
         // Handle successful login or signup
-        Navigator.pushNamed(context, '/');
+        Navigator.pushNamed(context, '/dashboard');
       } else {
         _logger.warning('Google login failed: ${response.body}');
         setState(() {

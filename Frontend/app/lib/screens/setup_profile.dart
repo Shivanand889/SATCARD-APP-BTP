@@ -100,7 +100,7 @@ class _SetupProfileScreenState extends State<SetupProfileScreen> {
       if (response.statusCode == 200) {
         print('Google login successful');
         // Handle successful login or signup
-        Navigator.pushNamed(context, '/');
+        Navigator.pushNamed(context, '/dashboard');
       } else {
         print('Google login failed: ${response.body}');
        

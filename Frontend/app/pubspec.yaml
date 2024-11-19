@@ -25,6 +25,8 @@ dependencies:
   webview_flutter: ^4.0.0
   url_launcher: ^6.0.9
   logging: ^1.0.2
+  fl_chart: ^0.69.0
+  flutter_svg: ^2.0.09
   
 dev_dependencies:
   flutter_test:
@@ -38,6 +40,7 @@ flutter:
   # Assets section for images and fonts
   assets:
     - assets/images/bg.jpg
+    - assets/icons/
 
   fonts:
     - family: playfair

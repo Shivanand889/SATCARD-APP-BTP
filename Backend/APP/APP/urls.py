@@ -17,6 +17,7 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path, include
 from home.views import *
+from Farm.views import *
 from django.views.generic.base import RedirectView
 
 
@@ -28,6 +29,7 @@ urlpatterns = [
     path('loginPhone',LoginViaPhone, name = 'LoginViaPhone'),
     path('admin/', admin.site.urls),
     path('gauth', gauth, name = 'gauth'),
+    path("addFarm",AddFarm, name = 'AddFarm'),
     # path("", include('googleauthentication.urls')),
     # path('accounts/', google_login_redirect, name='google_login'),
     path("accounts/", include("allauth.urls")),

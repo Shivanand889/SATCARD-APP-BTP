@@ -45,7 +45,6 @@ flutter:
   # Assets section for images and fonts
   assets:
     - assets/images/bg.jpg
-    - assets/icons/
 
   fonts:
     - family: playfair

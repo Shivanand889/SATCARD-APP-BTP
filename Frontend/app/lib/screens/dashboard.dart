@@ -27,6 +27,7 @@ class _DashboardState extends State<Dashboard> {
         color: bgColor,
         child: SafeArea(
           child: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Expanded(
                 flex: 2,

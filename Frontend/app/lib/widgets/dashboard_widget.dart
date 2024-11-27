@@ -5,11 +5,21 @@ import 'package:app/components/storage_details.dart';
 import 'package:app/responsive.dart';
 import 'package:flutter/material.dart';
 import 'package:app/const/constant.dart';
+import 'package:app/models/my_files.dart';
 
+class DashboardWidget extends StatelessWidget {
+  final List<CloudStorageInfo> farmData; // Accept farm data as input
+  final Map<String, dynamic> weatherData; // Accept weather data as input
+  final String name ;
+  final List<dynamic> activityData;
 
-
- class DashboardWidget extends StatelessWidget {
-  const DashboardWidget({super.key});
+  const DashboardWidget({
+    super.key,
+    this.farmData = const [], // Optional farm data parameter with a default empty list
+    this.weatherData = const {}, // Optional weather data parameter with a default empty map
+    this.name = "" ,
+    this.activityData= const [],
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -28,22 +38,21 @@ import 'package:app/const/constant.dart';
                   flex: 5,
                   child: Column(
                     children: [
-                      MyFiles(),
+                      MyFiles(fileData: farmData , name : name), // Pass the farm data to MyFiles
                       SizedBox(height: defaultPadding),
-                      RecentFiles(),
+                      RecentFiles(activityData : activityData),
                       if (Responsive.isMobile(context))
                         SizedBox(height: defaultPadding),
-                      if (Responsive.isMobile(context)) StorageDetails(),
+                      if (Responsive.isMobile(context)) StorageDetails(weatherData: weatherData), // Pass weatherData
                     ],
                   ),
                 ),
                 if (!Responsive.isMobile(context))
                   SizedBox(width: defaultPadding),
-                // On Mobile means if the screen is less than 850 we don't want to show it
                 if (!Responsive.isMobile(context))
                   Expanded(
                     flex: 2,
-                    child: StorageDetails(),
+                    child: StorageDetails(weatherData: weatherData), // Pass weatherData
                   ),
               ],
             )
@@ -52,4 +61,4 @@ import 'package:app/const/constant.dart';
       ),
     );
   }
-} 
+}

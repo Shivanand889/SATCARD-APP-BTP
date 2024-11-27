@@ -5,8 +5,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 
 class RecentFiles extends StatelessWidget {
+  final List<dynamic> activityData; // Activity data passed to the widget
+
   const RecentFiles({
     Key? key,
+    required this.activityData, // Required parameter for activity data
   }) : super(key: key);
 
   @override
@@ -29,7 +32,7 @@ class RecentFiles extends StatelessWidget {
             child: DataTable(
               columnSpacing: defaultPadding,
               // minWidth: 600,
-              columns: [
+              columns: const [
                 DataColumn(
                   label: Text("Activity Name"),
                 ),
@@ -41,8 +44,8 @@ class RecentFiles extends StatelessWidget {
                 ),
               ],
               rows: List.generate(
-                demoRecentFiles.length,
-                (index) => recentFileDataRow(demoRecentFiles[index]),
+                activityData.length, // Use the activityData length
+                (index) => recentFileDataRow(activityData[index]), // Pass each activity data
               ),
             ),
           ),
@@ -52,21 +55,18 @@ class RecentFiles extends StatelessWidget {
   }
 }
 
-DataRow recentFileDataRow(RecentFile fileInfo) {
+// Updated to use activity data fields
+DataRow recentFileDataRow(dynamic activityData) {
+  // Extract the relevant fields from activityData
+  final activityName = activityData['name']; // Assuming activity data has 'name'
+  final activityDate = activityData['date']; // Assuming activity data has 'date'
+  final area = activityData['area']; // Assuming activity data has 'area'
+
   return DataRow(
     cells: [
-      DataCell(
-        Row(
-          children: [
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: defaultPadding),
-              child: Text(fileInfo.title!),
-            ),
-          ],
-        ),
-      ),
-      DataCell(Text(fileInfo.date!)),
-      DataCell(Text(fileInfo.size!)),
+      DataCell(Text(activityName ?? 'No name')), // Default value if null
+      DataCell(Text(activityDate ?? 'No date')), // Default value if null
+      DataCell(Text(area ?? 'No area')), // Default value if null
     ],
   );
 }

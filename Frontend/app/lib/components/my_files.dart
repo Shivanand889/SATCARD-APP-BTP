@@ -7,8 +7,12 @@ import 'package:app/models/my_files.dart';
 import 'file_info_card.dart';
 
 class MyFiles extends StatelessWidget {
+  final List<CloudStorageInfo> fileData; // Accept the data as input
+  final String name ;
   const MyFiles({
     Key? key,
+    required this.fileData, 
+    this.name = "",
   }) : super(key: key);
 
   @override
@@ -22,10 +26,10 @@ class MyFiles extends StatelessWidget {
             Text(
               "Farm Information",
               style: TextStyle(
-                  color: Colors.white,  // Change to desired color
-                  fontSize: 16,         // Optional: adjust font size
-                  fontWeight: FontWeight.w200, // Optional: set font weight
-                ),
+                color: Colors.white,  // Change to desired color
+                fontSize: 16,         // Optional: adjust font size
+                fontWeight: FontWeight.w200, // Optional: set font weight
+              ),
             ),
             ElevatedButton.icon(
               style: TextButton.styleFrom(
@@ -36,7 +40,7 @@ class MyFiles extends StatelessWidget {
                 ),
               ),
               onPressed: () {
-                showAddActivityDialog(context); 
+                showAddActivityDialog(context,name);
               },
               icon: Icon(Icons.add),
               label: Text("Add Activity"),
@@ -46,11 +50,13 @@ class MyFiles extends StatelessWidget {
         SizedBox(height: defaultPadding),
         Responsive(
           mobile: FileInfoCardGridView(
+            fileData: fileData, // Pass the data to the grid view
             crossAxisCount: _size.width < 650 ? 2 : 4,
             childAspectRatio: _size.width < 650 ? 1.3 : 1,
           ),
-          tablet: FileInfoCardGridView(),
+          tablet: FileInfoCardGridView(fileData: fileData),
           desktop: FileInfoCardGridView(
+            fileData: fileData,
             childAspectRatio: _size.width < 1400 ? 1.1 : 1.4,
           ),
         ),
@@ -60,28 +66,30 @@ class MyFiles extends StatelessWidget {
 }
 
 class FileInfoCardGridView extends StatelessWidget {
+  final List<CloudStorageInfo> fileData; // Accept the data here
+  final int crossAxisCount;
+  final double childAspectRatio;
+
   const FileInfoCardGridView({
     Key? key,
+    required this.fileData, // Mark as required
     this.crossAxisCount = 4,
     this.childAspectRatio = 1,
   }) : super(key: key);
-
-  final int crossAxisCount;
-  final double childAspectRatio;
 
   @override
   Widget build(BuildContext context) {
     return GridView.builder(
       physics: NeverScrollableScrollPhysics(),
       shrinkWrap: true,
-      itemCount: demoMyFiles.length,
+      itemCount: fileData.length, // Use the provided data length
       gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
         crossAxisCount: crossAxisCount,
         crossAxisSpacing: defaultPadding,
         mainAxisSpacing: defaultPadding,
         childAspectRatio: childAspectRatio,
       ),
-      itemBuilder: (context, index) => FileInfoCard(info: demoMyFiles[index]),
+      itemBuilder: (context, index) => FileInfoCard(info: fileData[index]),
     );
   }
 }

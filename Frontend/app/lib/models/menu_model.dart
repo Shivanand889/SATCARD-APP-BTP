@@ -3,11 +3,7 @@ import 'package:flutter/material.dart';
 class MenuModel {
   final IconData icon;
   final String title;
-  final List<MenuModel>? submenus; // Add submenus
+  List<MenuModel>? submenus; // Mutable field for dynamic updates
 
-  const MenuModel({
-    required this.icon,
-    required this.title,
-    this.submenus,
-  });
+  MenuModel({required this.icon, required this.title, this.submenus});
 }

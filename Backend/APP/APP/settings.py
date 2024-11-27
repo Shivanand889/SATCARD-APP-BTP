@@ -46,8 +46,8 @@ INSTALLED_APPS = [
     "allauth.socialaccount.providers.google",
     'home',
     'corsheaders',
-    'Farm',
-    'activity',
+    'Farms',
+    'activities',
 ]
 
 SOCIALACCOUNT_PROVIDERS = {
@@ -113,8 +113,9 @@ DATABASES = {
         'NAME': 'satcard_data',
         'USER' : 'root',
         'HOST' : '127.0.0.1',
-        'PASSWORD' : '1234',
+        'PASSWORD' : 'Shiva#$098',
         'PORT' : '3306',
+        
     }
 }
 

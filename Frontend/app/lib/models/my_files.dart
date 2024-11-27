@@ -9,7 +9,7 @@ class CloudStorageInfo {
   });
 }
 
-List demoMyFiles = [
+List<CloudStorageInfo> demoMyFiles = [
   CloudStorageInfo(
     title: "Farm Name",
   ),

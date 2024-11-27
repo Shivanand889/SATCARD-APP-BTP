@@ -5,8 +5,11 @@ import 'chart.dart';
 import 'storage_info_card.dart';
 
 class StorageDetails extends StatelessWidget {
+  final Map<String, dynamic> weatherData; // Accept weather data as input
+
   const StorageDetails({
     Key? key,
+    required this.weatherData, // Make it required to pass the data
   }) : super(key: key);
 
   @override
@@ -28,26 +31,26 @@ class StorageDetails extends StatelessWidget {
             ),
           ),
           SizedBox(height: defaultPadding),
-          Chart(),
+          // Chart or any weather data visualization can go here
           StorageInfoCard(
             svgSrc: "icons/temperature.svg",
             title: "Temperature",
-            amountOfFiles: "30°C",
+            amountOfFiles: "${weatherData['temperature']}°C", // Display dynamic temperature value
           ),
           StorageInfoCard(
             svgSrc: "icons/humidity.svg",
             title: "Humidity",
-            amountOfFiles: "91%",
+            amountOfFiles: "${weatherData['humidity']}%", // Display dynamic humidity value
           ),
           StorageInfoCard(
             svgSrc: "icons/wind.svg",
             title: "Wind",
-            amountOfFiles: "6 km/h",
+            amountOfFiles: "${weatherData['wind']} km/h", // Display dynamic wind value
           ),
           StorageInfoCard(
             svgSrc: "icons/rain.svg",
             title: "Precipitation",
-            amountOfFiles: "25%",
+            amountOfFiles: "${weatherData['precipitation']}%", // Display dynamic precipitation value
           ),
         ],
       ),

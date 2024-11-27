@@ -225,7 +225,7 @@ class _SideMenuWidgetState extends State<SideMenuWidget> {
     case 'Add Farm':
       return const AddFarm();
     case 'Dashboard':
-      return DashboardWidget(); // You can pass relevant data here if needed
+      return DashboardWidget(); 
     default:
       return FutureBuilder<Map<String, dynamic>>(
         future: fetchFarmRelatedData(title), // Call async method here

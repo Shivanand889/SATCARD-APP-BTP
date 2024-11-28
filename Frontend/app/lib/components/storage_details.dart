@@ -45,7 +45,7 @@ class StorageDetails extends StatelessWidget {
           StorageInfoCard(
             svgSrc: "icons/wind.svg",
             title: "Wind",
-            amountOfFiles: "${weatherData['wind']} km/h", // Display dynamic wind value
+            amountOfFiles: "${weatherData['wind']} m/s", // Display dynamic wind value
           ),
           StorageInfoCard(
             svgSrc: "icons/rain.svg",

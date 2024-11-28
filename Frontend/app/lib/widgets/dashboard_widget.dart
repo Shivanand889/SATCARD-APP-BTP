@@ -20,10 +20,9 @@ class DashboardWidget extends StatefulWidget {
     this.weatherData = const {},
     this.name = "",
     this.activityData = const [],
-    this.suggestionsData = const ["Check irrigation levels",
-    "Inspect crop health",
-    "Update farm logs",
-    "Plan for fertilization"],  // Default to an empty list
+    this.suggestionsData = const ["Fertilization ",
+    "Spray",
+    ],  // Default to an empty list
   });
 
   @override

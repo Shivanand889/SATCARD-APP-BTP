@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
 import 'package:app/components/header.dart';
 import 'package:app/components/my_files.dart';
 import 'package:app/components/recent_files.dart';
@@ -12,7 +14,6 @@ class DashboardWidget extends StatefulWidget {
   final Map<String, dynamic> weatherData;
   final String name;
   final List<dynamic> activityData;
-  final List<String> suggestionsData;  // Accept dynamic suggestions
 
   const DashboardWidget({
     super.key,
@@ -20,9 +21,6 @@ class DashboardWidget extends StatefulWidget {
     this.weatherData = const {},
     this.name = "",
     this.activityData = const [],
-    this.suggestionsData = const ["Fertilization ",
-    "Spray",
-    ],  // Default to an empty list
   });
 
   @override
@@ -31,6 +29,43 @@ class DashboardWidget extends StatefulWidget {
 
 class _DashboardWidgetState extends State<DashboardWidget> {
   bool showSuggestions = false; // Track if the suggestions box is visible
+  List<String> suggestions = []; // Store the fetched suggestions
+
+  Future<void> fetchSuggestions() async {
+    final url = Uri.parse('http://127.0.0.1:8000/suggestions');
+
+    try {
+      final response = await http.post(
+        url,
+        body: {'name': widget.name},
+      );
+
+      if (response.statusCode == 200) {
+        // Decode the response and update suggestions
+        final data = json.decode(response.body);
+        setState(() {
+          suggestions = List<String>.from(data['data']); // Extract from "data" key
+          showSuggestions = true;
+        });
+      } else {
+        print('Failed to fetch suggestions: ${response.body}');
+      }
+    } catch (e) {
+      print('Error fetching suggestions: $e');
+    }
+  }
+
+  void toggleSuggestions() {
+    setState(() {
+      if (showSuggestions) {
+        // Hide suggestions if already visible
+        showSuggestions = false;
+      } else {
+        // Fetch suggestions if not visible
+        fetchSuggestions();
+      }
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -67,13 +102,10 @@ class _DashboardWidgetState extends State<DashboardWidget> {
                         StorageDetails(weatherData: widget.weatherData),
                         SizedBox(height: defaultPadding),
                         ElevatedButton(
-                          onPressed: () {
-                            setState(() {
-                              showSuggestions = !showSuggestions; // Toggle visibility
-                            });
-                          },
-                          child: Text(showSuggestions ? "Hide Suggestions" : "Show Suggestions",
-                          style: TextStyle(height: 3),
+                          onPressed: toggleSuggestions,
+                          child: Text(
+                            showSuggestions ? "Hide Suggestions" : "Show Suggestions",
+                            style: TextStyle(height: 3),
                           ),
                         ),
                         if (showSuggestions)
@@ -86,17 +118,17 @@ class _DashboardWidgetState extends State<DashboardWidget> {
                             ),
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
-                               children: [
+                              children: [
                                 Text(
                                   "Suggested Activities",
                                   style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                                 ),
                                 SizedBox(height: 8),
-                                ...List.generate(widget.suggestionsData.length, (index) {
+                                ...List.generate(suggestions.length, (index) {
                                   return Padding(
                                     padding: const EdgeInsets.symmetric(vertical: 4.0),
                                     child: Text(
-                                      "${index + 1}. ${widget.suggestionsData[index]}",
+                                      "${index + 1}. ${suggestions[index]}",
                                       style: TextStyle(fontSize: 14),
                                     ),
                                   );

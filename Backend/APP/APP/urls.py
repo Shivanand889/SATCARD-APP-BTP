@@ -34,6 +34,8 @@ urlpatterns = [
     path("farmList",FarmList, name = 'FarmList'),
     path("farmData",FarmData, name = 'FarmData'),
     path("add-activity",AddActivity, name = 'AddActivity'),
+    path("suggestions",Suggestions, name = 'Suggestions'),
+    
     # path("", include('googleauthentication.urls')),
     # path('accounts/', google_login_redirect, name='google_login'),
     path("accounts/", include("allauth.urls")),

@@ -10,3 +10,8 @@ class Activity(models.Model):
     farmName = models.CharField(max_length=50, null=False, default='')
     email = models.ForeignKey(Users, on_delete=models.CASCADE, to_field='email', default='')
 
+    gdd = models.IntegerField(default=0)
+    rain = models.IntegerField(default=0)
+    humidity = models.IntegerField(default=0)
+    wind = models.IntegerField(default=0)
+    

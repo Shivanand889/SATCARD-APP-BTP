@@ -13,3 +13,4 @@ class Farms(models.Model):
     soilType  = models.CharField(max_length=50, default='crop')
     area = models.IntegerField(default=0)
     
+    

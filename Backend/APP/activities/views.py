@@ -112,7 +112,7 @@ def Suggestions(request):
 
         # Step 2: Verify that the user is valid
         user = Users.objects.filter(email=email).first()
-        print(2)
+        # print(2)
         try :
             farm = Farms.objects.filter(email=user, name=farmName).first()
         except Exception as e:
@@ -135,6 +135,15 @@ def Suggestions(request):
         )
         
         last_4_dates = list(distinct_dates[:4])
+        print(len(last_4_dates))
+        if len(last_4_dates)==0 :
+            return Response({"data": ['ploughing','mulching']}, status=200)
+
+        if len(last_4_dates)==1 :
+            return Response({"data": ['sowing']}, status=200)
+
+        if len(last_4_dates)<4 :
+            return Response({"data": ['irrigation']}, status=200)
 
         l_date = []
         for i in last_4_dates :

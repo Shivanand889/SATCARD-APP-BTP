@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:app/widgets/side_menu_widget.dart';
 import 'package:app/widgets/dashboard_widget.dart';
 // import 'package:app/widgets/add_farm.dart';
+import 'package:app/widgets/main_dashboard.dart';
 import 'package:app/const/constant.dart';
 
 class Dashboard extends StatefulWidget {
@@ -12,7 +13,7 @@ class Dashboard extends StatefulWidget {
 }
 
 class _DashboardState extends State<Dashboard> {
-  Widget _selectedPage = const DashboardWidget();
+  Widget _selectedPage = const MainDashboard(); 
 
   void _updatePage(Widget page) {
     setState(() {

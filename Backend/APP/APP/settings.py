@@ -113,7 +113,7 @@ DATABASES = {
         'NAME': 'satcard_data',
         'USER' : 'root',
         'HOST' : '127.0.0.1',
-        'PASSWORD' : 'Shiva#$098',
+        'PASSWORD' : '1234',
         'PORT' : '3306',
         
     }

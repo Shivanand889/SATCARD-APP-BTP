@@ -7,6 +7,7 @@ import 'package:app/models/menu_model.dart';
 import 'package:app/models/my_files.dart';
 import 'package:app/widgets/add_farm.dart';
 import 'package:app/widgets/dashboard_widget.dart';
+import 'package:app/widgets/main_dashboard.dart';
 import 'package:app/const/constant.dart';
 
 class SideMenuWidget extends StatefulWidget {
@@ -226,11 +227,11 @@ class _SideMenuWidgetState extends State<SideMenuWidget> {
     case 'Add Farm':
       return const AddFarm();
     case 'Dashboard':
-      return DashboardWidget(); 
+      return MainDashboard(); 
 
-    case 'SignOut':
-       
-       return WelcomeScreen(); 
+    case 'SignOut': 
+       return WelcomeScreen();
+        
     default:
       return FutureBuilder<Map<String, dynamic>>(
         future: fetchFarmRelatedData(title), // Call async method here

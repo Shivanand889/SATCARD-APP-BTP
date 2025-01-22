@@ -97,7 +97,7 @@ def Suggestions(request):
     activities = {'Sowing' :6, 'Spray':7, 'Irrigation':8, 'Scouting':9, 'Plowing':10, 'Fertilizing':11, 
               'Pruning':12, 'Transplantation':13, 'Mulching':14, 'Harvesting':15, 'Weeding':16}
 
-    Soil = {'red' : 0, 'black' : 1}
+    Soil = {'red' : 0, 'black' : 1,   'Red' : 0, 'Black' : 1}
     try:
         # Step 1: Get the email from the cache (session)
         email = cache.get('email')
@@ -170,19 +170,20 @@ def Suggestions(request):
             temp = [0 for x in range(18)]
             
             for j in rows :
-                # print(1)
+                print(1)
                 # print(j.date)
                 if j.date == i :
+                    print(2)
                     temp[0] = j.gdd
-                    # print(1)
+                    print(3)
                     temp[1]= Soil[farm.soilType]
-                    # print(2)
+                    print(4)
                     temp[2] = j.rain
                     temp[3] = farm.area
-                    # print(5)
+                    print(5)
                     temp[4] = j.humidity
                     temp[5] = j.wind
-                    # print(6)
+                    print(6)
                     temp[activities[j.activityName]] = 1
                     # print(5)
                     temp[17] = day

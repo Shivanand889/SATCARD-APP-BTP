@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
-import 'package:app/components/header.dart';
+// import 'package:app/components/header.dart';
 import 'package:app/components/my_files.dart';
 import 'package:app/components/recent_files.dart';
 import 'package:app/components/storage_details.dart';
@@ -75,7 +75,7 @@ class _DashboardWidgetState extends State<DashboardWidget> {
         padding: EdgeInsets.all(defaultPadding),
         child: Column(
           children: [
-            Header(),
+            // Header(),
             SizedBox(height: defaultPadding),
             Row(
               crossAxisAlignment: CrossAxisAlignment.start,

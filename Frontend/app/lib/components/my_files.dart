@@ -27,8 +27,8 @@ class MyFiles extends StatelessWidget {
               "Farm Information",
               style: TextStyle(
                 color: Colors.white,  // Change to desired color
-                fontSize: 16,         // Optional: adjust font size
-                fontWeight: FontWeight.w200, // Optional: set font weight
+                fontSize: 25,         // Optional: adjust font size
+                fontWeight: FontWeight.w300, // Optional: set font weight
               ),
             ),
             ElevatedButton.icon(

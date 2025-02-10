@@ -2,13 +2,19 @@ from django.shortcuts import render, redirect
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from .models import Farms
-from .serializers import FarmsSerializer
+from activities.models import Activity
+# from .serializers import FarmsSerializer
+from django.db.models import Q
+
 from django.contrib.auth import logout
 from django.core.cache import cache
 from home.models import Users
 from activities.models import Activity
 import json
 import requests 
+from django.http import HttpResponse
+import pandas as pd 
+
 @api_view(['POST'])
 def AddFarm(request):
     name = request.data.get('name')
@@ -148,3 +154,88 @@ def FarmData(request):
 
     except Exception as e:
         return Response({"error": str(e)}, status=500)
+
+@api_view(['POST'])
+def downloadActivityDetails(request):
+    
+    features = ['GDD', 'Soil Type', 'Rainfall', 'Land Area','humidity', 'Wind speed']
+    activities = {'Sowing' :6, 'Spray':7, 'Irrigation':8, 'Scouting':9, 'Plowing':10, 'Fertilizing':11, 
+              'Pruning':12, 'Transplantation':13, 'Mulching':14, 'Harvesting':15, 'Weeding':16}
+
+    Soil = {'red' : 0, 'black' : 1,   'Red' : 0, 'Black' : 1}
+    try:
+        # Step 1: Get the email from the cache (session)
+        email = cache.get('email')
+        print(email)
+        if not email:
+            return Response({"error": "User is not logged in or session expired"}, status=401)
+
+        farmName = request.data.get('name')
+        print(farmName)
+        if not farmName:
+            return Response({"error": "Farm name is required"}, status=400)
+
+        # Step 2: Verify that the user is valid
+        user = Users.objects.filter(email=email).first()
+        try:
+            farm = Farms.objects.filter(email=user, name=farmName).first()
+        except Exception as e:
+            print(e)
+
+        if not user:
+            return Response({"error": "User not found"}, status=404)
+
+        # Step 3: Query distinct dates from the Activity table
+        distinct_dates = (
+            Activity.objects.filter(Q(email=email) & Q(farmName=farmName))
+            .order_by('date')  # Order by date descending
+            .values_list('date', flat=True)  # Get only the date column
+            .distinct()  # Ensure distinct dates
+        )
+
+        l_date = []
+        for i in distinct_dates:
+            l_date.append(i)
+
+        l_date.reverse()
+        print(l_date)
+
+        l = []
+
+        # Step 4: Get the last 4 distinct dates
+        print("aaaaaaaaaaaaaaaaaaaaaaaaaa")
+        rows = (
+            Activity.objects.filter(Q(email=email) & Q(farmName=farmName))
+        )
+        print("bbbbbbbbbbbbbbbbbbbbbbbbb")
+        day = 0 
+        final_data = []
+
+        for i in l_date:
+            temp = []
+            for j in rows:
+                print(1)
+                if j.date == i:
+                    temp.append(j.activityName)
+            
+            final_data.append(temp)
+        
+        data = {}  # This should be inside the try block
+        for i in range(len(l_date)):
+            data[l_date[i]] = final_data[i]
+
+        df = pd.DataFrame([data])
+
+        try:
+            response = HttpResponse(content_type='text/csv')
+            df.to_csv(path_or_buf=response, index=False)
+            response['Content-Disposition'] = 'attachment; filename="data.csv"'
+            
+            return response
+
+        except Exception as e:
+            print(f"exception : {e}")
+
+    except Exception as e:
+        print(f"Unexpected error: {e}")
+        return Response({"error": "An unexpected error occurred"}, status=500)

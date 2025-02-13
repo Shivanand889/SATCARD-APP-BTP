@@ -20,7 +20,7 @@ from home.views import *
 from Farms.views import *
 from activities.views import *
 from django.views.generic.base import RedirectView
-
+from TicketPortal.views import *
 
 
 urlpatterns = [
@@ -35,7 +35,7 @@ urlpatterns = [
     path("farmData",FarmData, name = 'FarmData'),
     path("add-activity",AddActivity, name = 'AddActivity'),
     path("suggestions",Suggestions, name = 'Suggestions'),
-    
+    path("raiseIssue",raiseIssue, name = 'raiseIssue'),
     path("downloadActivityDetails",downloadActivityDetails, name = 'downloadActivityDetails'),
     # path("", include('googleauthentication.urls')),
     # path('accounts/', google_login_redirect, name='google_login'),

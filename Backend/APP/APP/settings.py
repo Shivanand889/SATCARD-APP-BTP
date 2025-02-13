@@ -48,6 +48,7 @@ INSTALLED_APPS = [
     'corsheaders',
     'Farms',
     'activities',
+    'TicketPortal',
 ]
 
 SOCIALACCOUNT_PROVIDERS = {

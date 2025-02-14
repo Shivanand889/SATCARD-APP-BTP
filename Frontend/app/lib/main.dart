@@ -6,6 +6,7 @@ import 'package:app/screens/signup_screen.dart';
 import 'package:app/screens/reset_password_screen.dart';
 import 'package:app/screens/otp_screen.dart';
 import 'package:app/screens/setup_profile.dart';
+import 'package:app/screens/raise_ticket.dart';
 import 'package:logging/logging.dart';
 void main() {
   _initializeLogger();
@@ -45,7 +46,7 @@ class MyApp extends StatelessWidget {
         '/otp': (context) => const OtpScreen(),
         '/setup-profile': (context) => const SetupProfileScreen(),
         '/dashboard': (context) => const Dashboard(),
-        
+        '/raise_ticket': (context) => TicketPortalApp(),
       },
     );
   }

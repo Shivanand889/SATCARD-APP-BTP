@@ -1,8 +1,7 @@
 import 'package:app/models/recent_file.dart';
 import 'package:app/const/constant.dart';
-
 import 'package:flutter/material.dart';
-import 'package:flutter_svg/svg.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 
 class RecentFiles extends StatelessWidget {
   final List<dynamic> activityData; // Activity data passed to the widget
@@ -11,6 +10,12 @@ class RecentFiles extends StatelessWidget {
     Key? key,
     required this.activityData, // Required parameter for activity data
   }) : super(key: key);
+
+  // Function to handle the download action
+  void downloadData() {
+    // Implement the download logic here
+    print('Downloading activity data...');
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -23,15 +28,25 @@ class RecentFiles extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            "Your Activities",
-            style: Theme.of(context).textTheme.titleMedium,
+          // Add a Row for the title and download button
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                "Your Activities",
+                style: Theme.of(context).textTheme.titleMedium,
+              ),
+              IconButton(
+                icon: Icon(Icons.download),
+                onPressed: downloadData, // Call the download function
+                tooltip: 'Download Activity Data',
+              ),
+            ],
           ),
           SizedBox(
             width: double.infinity,
             child: DataTable(
               columnSpacing: defaultPadding,
-              // minWidth: 600,
               columns: const [
                 DataColumn(
                   label: Text("Activity Name"),
@@ -44,8 +59,8 @@ class RecentFiles extends StatelessWidget {
                 ),
               ],
               rows: List.generate(
-                activityData.length, // Use the activityData length
-                (index) => recentFileDataRow(activityData[index]), // Pass each activity data
+                activityData.length,
+                (index) => recentFileDataRow(activityData[index]),
               ),
             ),
           ),
@@ -57,16 +72,15 @@ class RecentFiles extends StatelessWidget {
 
 // Updated to use activity data fields
 DataRow recentFileDataRow(dynamic activityData) {
-  // Extract the relevant fields from activityData
-  final activityName = activityData['name']; // Assuming activity data has 'name'
-  final activityDate = activityData['date']; // Assuming activity data has 'date'
-  final area = activityData['area']; // Assuming activity data has 'area'
+  final activityName = activityData['name'];
+  final activityDate = activityData['date'];
+  final area = activityData['area'];
 
   return DataRow(
     cells: [
-      DataCell(Text(activityName ?? 'No name')), // Default value if null
-      DataCell(Text(activityDate ?? 'No date')), // Default value if null
-      DataCell(Text(area ?? 'No area')), // Default value if null
+      DataCell(Text(activityName ?? 'No name')),
+      DataCell(Text(activityDate ?? 'No date')),
+      DataCell(Text(area ?? 'No area')),
     ],
   );
 }

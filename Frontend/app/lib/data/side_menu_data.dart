@@ -11,6 +11,7 @@ class SideMenuData {
       submenus: [MenuModel(icon: Icons.agriculture, title: 'Farm 4'),
         MenuModel(icon: Icons.agriculture, title: 'Farm 1'),], // Initially empty, can be updated dynamically
     ),
+    MenuModel(icon: Icons.support, title: 'Raise Ticket'),
     MenuModel(icon: Icons.logout, title: 'SignOut'),
   ];
 

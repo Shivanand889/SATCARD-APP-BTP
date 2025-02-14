@@ -168,8 +168,22 @@ class _AddActivityFormState extends State<AddActivityForm> {
                   }
                 },
               ),
-              SizedBox(height: 10),
-              
+                SizedBox(height: 20),
+                TextFormField(
+                // controller: _quantityController,
+                keyboardType: TextInputType.number, // Ensure numeric input
+                decoration: InputDecoration(
+                  labelText: 'Enter Area/Quantity',
+                  hintText: 'e.g., 10 acres or 50 units',
+                  // border: OutlineInputBorder(),
+                ),
+                validator: (value) {
+                  if (value == null || value.isEmpty) {
+                    return 'Please enter area or quantity';
+                  }
+                  return null;
+                },
+              ),
             ],
           ),
         ),

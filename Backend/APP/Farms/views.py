@@ -156,8 +156,9 @@ def FarmData(request):
         return Response({"error": str(e)}, status=500)
 
 @api_view(['POST'])
-def downloadActivityDetails(request):
+def DownloadActivityDetails(request):
     
+    print("##################################")
     features = ['GDD', 'Soil Type', 'Rainfall', 'Land Area','humidity', 'Wind speed']
     activities = {'Sowing' :6, 'Spray':7, 'Irrigation':8, 'Scouting':9, 'Plowing':10, 'Fertilizing':11, 
               'Pruning':12, 'Transplantation':13, 'Mulching':14, 'Harvesting':15, 'Weeding':16}
@@ -220,11 +221,13 @@ def downloadActivityDetails(request):
             
             final_data.append(temp)
         
-        data = {}  # This should be inside the try block
+        data = []  # This should be inside the try block
+        
         for i in range(len(l_date)):
-            data[l_date[i]] = final_data[i]
+            temp = {'date' : l_date[i], "activities" : final_data[i]}
+            data.append(temp)
 
-        df = pd.DataFrame([data])
+        df = pd.DataFrame(data)
 
         try:
             response = HttpResponse(content_type='text/csv')

@@ -36,7 +36,7 @@ urlpatterns = [
     path("add-activity",AddActivity, name = 'AddActivity'),
     path("suggestions",Suggestions, name = 'Suggestions'),
     path("raiseIssue",raiseIssue, name = 'raiseIssue'),
-    path("downloadActivityDetails",downloadActivityDetails, name = 'downloadActivityDetails'),
+    path("downloadActivityDetails",DownloadActivityDetails, name = 'DownloadActivityDetails'),
     # path("", include('googleauthentication.urls')),
     # path('accounts/', google_login_redirect, name='google_login'),
     path("accounts/", include("allauth.urls")),

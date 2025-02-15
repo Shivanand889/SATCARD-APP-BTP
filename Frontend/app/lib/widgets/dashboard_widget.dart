@@ -86,7 +86,7 @@ class _DashboardWidgetState extends State<DashboardWidget> {
                     children: [
                       MyFiles(fileData: widget.farmData, name: widget.name),
                       SizedBox(height: defaultPadding),
-                      RecentFiles(activityData: widget.activityData),
+                      RecentFiles(activityData: widget.activityData, farmName : widget.name),
                       if (Responsive.isMobile(context)) SizedBox(height: defaultPadding),
                       if (Responsive.isMobile(context))
                         StorageDetails(weatherData: widget.weatherData),

@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:app/const/constant.dart'; // Importing the constants file
+import 'package:http/http.dart' as http;
+import 'dart:convert';
+import 'package:app/const/constant.dart'; // Importing constants
 
 class TicketPortalApp extends StatelessWidget {
   @override
@@ -14,6 +16,15 @@ class Ticket {
   String status;
 
   Ticket({required this.issue, required this.category, this.status = "Pending"});
+
+  // Factory constructor to create a Ticket from JSON
+  factory Ticket.fromJson(Map<String, dynamic> json) {
+    return Ticket(
+      issue: json['issue'] ?? '',
+      category: json['category'] ?? '',
+      status: json['status'] ?? 'Pending',
+    );
+  }
 }
 
 class TicketPortalScreen extends StatefulWidget {
@@ -24,18 +35,69 @@ class TicketPortalScreen extends StatefulWidget {
 class _TicketPortalScreenState extends State<TicketPortalScreen> {
   final _formKey = GlobalKey<FormState>();
   final TextEditingController _issueController = TextEditingController();
-  String? _selectedCategory; // No default category selected
+  String? _selectedCategory;
   List<Ticket> tickets = [];
+  bool isLoading = true; // To show a loading indicator while fetching data
 
-  void addTicket() {
-    if (_formKey.currentState!.validate()) {
-      setState(() {
-        tickets.add(Ticket(issue: _issueController.text, category: _selectedCategory!));
-        _issueController.clear();
-        _selectedCategory = null; // Reset dropdown after submission
-      });
+  @override
+  void initState() {
+    super.initState();
+    fetchTickets(); // Fetch ticket data when the screen loads
+  }
+
+  Future<void> fetchTickets() async {
+    try {
+      final response = await http.get(Uri.parse('http://127.0.0.1:8000/getTickets'));
+
+      if (response.statusCode == 200) {
+        final Map<String, dynamic> responseData = json.decode(response.body);
+        if (responseData.containsKey("data")) {
+          List<Ticket> loadedTickets = (responseData["data"] as List)
+              .map((ticketJson) => Ticket.fromJson(ticketJson))
+              .toList();
+
+          setState(() {
+            tickets = loadedTickets;
+            isLoading = false;
+          });
+        }
+      } else {
+        throw Exception('Failed to load tickets');
+      }
+    } catch (error) {
+      print("Error fetching tickets: $error");
+      setState(() => isLoading = false);
     }
   }
+
+void addTicket() async {
+  if (_formKey.currentState!.validate()) {
+    try {
+      final response = await http.post(
+        Uri.parse('http://127.0.0.1:8000/raiseIssue'),
+        headers: {"Content-Type": "application/json"},
+        body: jsonEncode({
+          'issue': _issueController.text,
+          'category': _selectedCategory,
+        }),
+      );
+
+      if (response.statusCode == 200) {
+        // Clear the form inputs
+        _issueController.clear();
+        setState(() => _selectedCategory = null);
+        
+        // Fetch updated tickets list
+        fetchTickets();
+      } else {
+        print("Failed to raise issue: ${response.body}");
+      }
+    } catch (error) {
+      print("Error adding ticket: $error");
+    }
+  }
+}
+
 
   @override
   Widget build(BuildContext context) {
@@ -96,48 +158,50 @@ class _TicketPortalScreenState extends State<TicketPortalScreen> {
               ),
             ),
             Expanded(
-              child: tickets.isEmpty
-                  ? Center(child: Text("No tickets raised yet!", style: TextStyle(color: secondaryColor)))
-                  : ListView.builder(
-                      itemCount: tickets.length,
-                      itemBuilder: (context, index) {
-                        return Card(
-                          color: cardBackgroundColor,
-                          elevation: 3,
-                          margin: EdgeInsets.symmetric(vertical: 5),
-                          child: ListTile(
-                            title: Text(tickets[index].issue, style: TextStyle(color: secondaryColor)),
-                            subtitle: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text("Category: ${tickets[index].category}", style: TextStyle(color: selectionColor)),
-                                SizedBox(height: 5),
-                                Row(
+              child: isLoading
+                  ? Center(child: CircularProgressIndicator(color: primaryColor))
+                  : tickets.isEmpty
+                      ? Center(child: Text("No tickets raised yet!", style: TextStyle(color: secondaryColor)))
+                      : ListView.builder(
+                          itemCount: tickets.length,
+                          itemBuilder: (context, index) {
+                            return Card(
+                              color: cardBackgroundColor,
+                              elevation: 3,
+                              margin: EdgeInsets.symmetric(vertical: 5),
+                              child: ListTile(
+                                title: Text(tickets[index].issue, style: TextStyle(color: secondaryColor)),
+                                subtitle: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
-                                    Text("Status: ", style: TextStyle(color: secondaryColor)),
-                                    Container(
-                                      padding: EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-                                      decoration: BoxDecoration(
-                                        color: tickets[index].status == "Pending"
-                                            ? Colors.orange
-                                            : tickets[index].status == "Resolved"
-                                                ? Colors.green
-                                                : Colors.red,
-                                        borderRadius: BorderRadius.circular(5),
-                                      ),
-                                      child: Text(
-                                        tickets[index].status,
-                                        style: TextStyle(color: Colors.white),
-                                      ),
+                                    Text("Category: ${tickets[index].category}", style: TextStyle(color: selectionColor)),
+                                    SizedBox(height: 5),
+                                    Row(
+                                      children: [
+                                        Text("Status: ", style: TextStyle(color: secondaryColor)),
+                                        Container(
+                                          padding: EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                                          decoration: BoxDecoration(
+                                            color: tickets[index].status == "Pending"
+                                                ? Colors.orange
+                                                : tickets[index].status == "Resolved"
+                                                    ? Colors.green
+                                                    : Colors.red,
+                                            borderRadius: BorderRadius.circular(5),
+                                          ),
+                                          child: Text(
+                                            tickets[index].status,
+                                            style: TextStyle(color: Colors.white),
+                                          ),
+                                        ),
+                                      ],
                                     ),
                                   ],
                                 ),
-                              ],
-                            ),
-                          ),
-                        );
-                      },
-                    ),
+                              ),
+                            );
+                          },
+                        ),
             ),
           ],
         ),

@@ -35,27 +35,35 @@ class _RecentFilesState extends State<RecentFiles> {
   // Function to handle the download action
   Future<void> downloadData() async {
     const String url = "http://127.0.0.1:8000/downloadActivityDetails";
+    print("From Date: ${fromDate}");
+print("To Date: ${toDate}");
+print("Formatted From Date: ${fromDate != null ? DateFormat('yyyy-MM-dd').format(fromDate!) : 'null'}");
+print("Formatted To Date: ${toDate != null ? DateFormat('yyyy-MM-dd').format(toDate!) : 'null'}");
 
-    try {
-      final response = await http.post(
-        Uri.parse(url),
-        headers: {"Content-Type": "application/json"},
-        body: jsonEncode({"name": widget.farmName}),
-      );
+  try {
+    final response = await http.post(
+      Uri.parse(url),
+      headers: {"Content-Type": "application/json"},
+      body: jsonEncode({
+        "name": widget.farmName,
+        "from_date": fromDate != null ? DateFormat('yyyy-MM-dd').format(fromDate!) : null,
+        "to_date": toDate != null ? DateFormat('yyyy-MM-dd').format(toDate!) : null,
+      }),
+    );
 
-      if (response.statusCode == 200) {
-        final blob = html.Blob([response.body]);
-        final url = html.Url.createObjectUrlFromBlob(blob);
-        final anchor = html.AnchorElement(href: url)
-          ..setAttribute("download", "activity_data.csv")
-          ..click();
-        html.Url.revokeObjectUrl(url);
-      } else {
-        print("Failed to download: ${response.statusCode}");
-      }
-    } catch (e) {
-      print("Error downloading file: $e");
+    if (response.statusCode == 200) {
+      final blob = html.Blob([response.body]);
+      final url = html.Url.createObjectUrlFromBlob(blob);
+      final anchor = html.AnchorElement(href: url)
+        ..setAttribute("download", "activity_data.csv")
+        ..click();
+      html.Url.revokeObjectUrl(url);
+    } else {
+      print("Failed to download: ${response.statusCode}");
     }
+  } catch (e) {
+    print("Error downloading file: $e");
+  }
   }
 
   // Function to filter data based on selected dates

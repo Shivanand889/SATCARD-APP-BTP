@@ -5,15 +5,32 @@ import 'package:http/http.dart' as http;
 import 'package:app/models/recent_file.dart';
 import 'package:app/const/constant.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:intl/intl.dart'; // For date formatting
 
-class RecentFiles extends StatelessWidget {
+class RecentFiles extends StatefulWidget {
   final List<dynamic> activityData;
-  final String farmName ;
+  final String farmName;
+
   const RecentFiles({
     Key? key,
     required this.activityData,
     required this.farmName,
   }) : super(key: key);
+
+  @override
+  State<RecentFiles> createState() => _RecentFilesState();
+}
+
+class _RecentFilesState extends State<RecentFiles> {
+  List<dynamic> filteredData = [];
+  DateTime? fromDate;
+  DateTime? toDate;
+
+  @override
+  void initState() {
+    super.initState();
+    filteredData = widget.activityData;
+  }
 
   // Function to handle the download action
   Future<void> downloadData() async {
@@ -23,11 +40,10 @@ class RecentFiles extends StatelessWidget {
       final response = await http.post(
         Uri.parse(url),
         headers: {"Content-Type": "application/json"},
-        body: jsonEncode({"name": farmName}), // Replace with actual farm name
+        body: jsonEncode({"name": widget.farmName}),
       );
 
       if (response.statusCode == 200) {
-        // Create a blob from response body and trigger download
         final blob = html.Blob([response.body]);
         final url = html.Url.createObjectUrlFromBlob(blob);
         final anchor = html.AnchorElement(href: url)
@@ -39,6 +55,43 @@ class RecentFiles extends StatelessWidget {
       }
     } catch (e) {
       print("Error downloading file: $e");
+    }
+  }
+
+  // Function to filter data based on selected dates
+  void filterData() {
+    if (fromDate == null || toDate == null) {
+      setState(() {
+        filteredData = widget.activityData;
+      });
+      return;
+    }
+
+    setState(() {
+      filteredData = widget.activityData.where((activity) {
+        DateTime activityDate = DateTime.parse(activity['date']);
+        return activityDate.isAfter(fromDate!.subtract(const Duration(days: 1))) &&
+            activityDate.isBefore(toDate!.add(const Duration(days: 1)));
+      }).toList();
+    });
+  }
+
+  // Function to pick date
+  Future<void> _selectDate(BuildContext context, bool isFrom) async {
+    final DateTime? picked = await showDatePicker(
+      context: context,
+      initialDate: DateTime.now(),
+      firstDate: DateTime(2000),
+      lastDate: DateTime.now(),
+    );
+    if (picked != null) {
+      setState(() {
+        if (isFrom) {
+          fromDate = picked;
+        } else {
+          toDate = picked;
+        }
+      });
     }
   }
 
@@ -60,13 +113,49 @@ class RecentFiles extends StatelessWidget {
                 "Your Activities",
                 style: Theme.of(context).textTheme.titleMedium,
               ),
-              IconButton(
-                icon: Icon(Icons.download),
-                onPressed: downloadData, // Updated function
-                tooltip: 'Download Activity Data',
+              Row(
+                children: [
+                  // Filter Label
+                  Text(
+                    "Filter:",
+                    style: TextStyle(fontWeight: FontWeight.bold),
+                  ),
+                  SizedBox(width: 8),
+                  // From Date Picker
+                  TextButton.icon(
+                    icon: Icon(Icons.date_range),
+                    label: Text(fromDate == null
+                        ? "From"
+                        : DateFormat('yyyy-MM-dd').format(fromDate!)),
+                    onPressed: () => _selectDate(context, true),
+                  ),
+                  SizedBox(width: 8),
+                  // To Date Picker
+                  TextButton.icon(
+                    icon: Icon(Icons.date_range),
+                    label: Text(toDate == null
+                        ? "To"
+                        : DateFormat('yyyy-MM-dd').format(toDate!)),
+                    onPressed: () => _selectDate(context, false),
+                  ),
+                  SizedBox(width: 8),
+                  // Go Button for Filtering
+                  ElevatedButton(
+                    onPressed: filterData,
+                    child: Text("Go"),
+                  ),
+                  SizedBox(width: 8),
+                  // Download Button
+                  IconButton(
+                    icon: Icon(Icons.download),
+                    onPressed: downloadData,
+                    tooltip: 'Download Activity Data',
+                  ),
+                ],
               ),
             ],
           ),
+          SizedBox(height: 16),
           SizedBox(
             width: double.infinity,
             child: DataTable(
@@ -77,8 +166,8 @@ class RecentFiles extends StatelessWidget {
                 DataColumn(label: Text("Area")),
               ],
               rows: List.generate(
-                activityData.length,
-                (index) => recentFileDataRow(activityData[index]),
+                filteredData.length,
+                (index) => recentFileDataRow(filteredData[index]),
               ),
             ),
           ),

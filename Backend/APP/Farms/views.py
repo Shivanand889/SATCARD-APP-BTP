@@ -157,11 +157,10 @@ def FarmData(request):
 
 @api_view(['POST'])
 def DownloadActivityDetails(request):
-    
     print("##################################")
     features = ['GDD', 'Soil Type', 'Rainfall', 'Land Area','humidity', 'Wind speed']
     activities = {'Sowing' :6, 'Spray':7, 'Irrigation':8, 'Scouting':9, 'Plowing':10, 'Fertilizing':11, 
-              'Pruning':12, 'Transplantation':13, 'Mulching':14, 'Harvesting':15, 'Weeding':16}
+                  'Pruning':12, 'Transplantation':13, 'Mulching':14, 'Harvesting':15, 'Weeding':16}
 
     Soil = {'red' : 0, 'black' : 1,   'Red' : 0, 'Black' : 1}
     try:
@@ -172,7 +171,11 @@ def DownloadActivityDetails(request):
             return Response({"error": "User is not logged in or session expired"}, status=401)
 
         farmName = request.data.get('name')
-        print(farmName)
+        from_date = request.data.get('from_date')  # Extract from_date
+        to_date = request.data.get('to_date')      # Extract to_date
+        
+        print(f"Farm Name: {farmName}, From Date: {from_date}, To Date: {to_date}")
+
         if not farmName:
             return Response({"error": "Farm name is required"}, status=400)
 
@@ -187,44 +190,42 @@ def DownloadActivityDetails(request):
             return Response({"error": "User not found"}, status=404)
 
         # Step 3: Query distinct dates from the Activity table
+        activity_filter = Q(email=email) & Q(farmName=farmName)
+
+        # Apply date range filtering if provided
+        if from_date and to_date:
+            activity_filter &= Q(date__gte=from_date) & Q(date__lte=to_date)
+
         distinct_dates = (
-            Activity.objects.filter(Q(email=email) & Q(farmName=farmName))
-            .order_by('date')  # Order by date descending
+            Activity.objects.filter(activity_filter)
+            .order_by('date')  # Order by date ascending
             .values_list('date', flat=True)  # Get only the date column
             .distinct()  # Ensure distinct dates
         )
 
-        l_date = []
-        for i in distinct_dates:
-            l_date.append(i)
+        l_date = list(distinct_dates)
+        l_date.reverse()  # Reverse to get descending order
 
-        l_date.reverse()
         print(l_date)
 
         l = []
 
-        # Step 4: Get the last 4 distinct dates
-        print("aaaaaaaaaaaaaaaaaaaaaaaaaa")
-        rows = (
-            Activity.objects.filter(Q(email=email) & Q(farmName=farmName))
-        )
-        print("bbbbbbbbbbbbbbbbbbbbbbbbb")
-        day = 0 
+        # Step 4: Get the activities for each distinct date
+        rows = Activity.objects.filter(activity_filter)
+        
         final_data = []
 
         for i in l_date:
             temp = []
             for j in rows:
-                print(1)
                 if j.date == i:
                     temp.append(j.activityName)
             
             final_data.append(temp)
         
-        data = []  # This should be inside the try block
-        
+        data = []
         for i in range(len(l_date)):
-            temp = {'date' : l_date[i], "activities" : final_data[i]}
+            temp = {'date': l_date[i], "activities": final_data[i]}
             data.append(temp)
 
         df = pd.DataFrame(data)
@@ -237,7 +238,7 @@ def DownloadActivityDetails(request):
             return response
 
         except Exception as e:
-            print(f"exception : {e}")
+            print(f"Exception: {e}")
 
     except Exception as e:
         print(f"Unexpected error: {e}")

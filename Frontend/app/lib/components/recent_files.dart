@@ -95,6 +95,15 @@ class _RecentFilesState extends State<RecentFiles> {
     }
   }
 
+  // Function to handle assignment of an activity
+  void assignActivity(String activityName) {
+    // Here, you can implement logic to assign the activity
+    print("Assigned: $activityName");
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text("Assigned activity: $activityName")),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -164,10 +173,11 @@ class _RecentFilesState extends State<RecentFiles> {
                 DataColumn(label: Text("Activity Name")),
                 DataColumn(label: Text("Date")),
                 DataColumn(label: Text("Area")),
+                DataColumn(label: Text("Assign")), // New Column
               ],
               rows: List.generate(
                 filteredData.length,
-                (index) => recentFileDataRow(filteredData[index]),
+                (index) => recentFileDataRow(filteredData[index], assignActivity),
               ),
             ),
           ),
@@ -177,16 +187,27 @@ class _RecentFilesState extends State<RecentFiles> {
   }
 }
 
-DataRow recentFileDataRow(dynamic activityData) {
-  final activityName = activityData['name'];
-  final activityDate = activityData['date'];
-  final area = activityData['area'];
+// Updated function to add Assign button
+DataRow recentFileDataRow(dynamic activityData, Function(String) assignActivity) {
+  final activityName = activityData['name'] ?? 'No name';
+  final activityDate = activityData['date'] ?? 'No date';
+  final area = activityData['area'] ?? 'No area';
 
   return DataRow(
     cells: [
-      DataCell(Text(activityName ?? 'No name')),
-      DataCell(Text(activityDate ?? 'No date')),
-      DataCell(Text(area ?? 'No area')),
+      DataCell(Text(activityName)),
+      DataCell(Text(activityDate)),
+      DataCell(Text(area)),
+      DataCell(
+        ElevatedButton(
+          onPressed: () => assignActivity(activityName),
+          style: ElevatedButton.styleFrom(
+            backgroundColor: Colors.blue, // Assign button color
+            padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+          ),
+          child: Text("Assign", style: TextStyle(color: Colors.white)),
+        ),
+      ),
     ],
   );
 }

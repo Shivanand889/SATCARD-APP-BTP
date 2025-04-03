@@ -33,6 +33,8 @@ dependencies:
   google_maps_flutter_web: ^0.5.10
   geocoding: ^3.0.0
   intl: ^0.18.0 
+  image_picker: ^1.0.7
+  permission_handler: ^11.0.1
   
 dev_dependencies:
   flutter_test:

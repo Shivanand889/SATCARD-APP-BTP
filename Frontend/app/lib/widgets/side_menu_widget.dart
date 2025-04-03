@@ -1,6 +1,8 @@
 import 'dart:convert'; // For JSON decoding
 import 'package:app/screens/welcome_screen.dart';
 import 'package:app/screens/raise_ticket.dart';
+import 'package:app/screens/customized_report.dart';
+import 'package:app/screens/analytics.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http; // For HTTP requests
 import 'package:app/data/side_menu_data.dart';
@@ -231,6 +233,10 @@ class _SideMenuWidgetState extends State<SideMenuWidget> {
       return MainDashboard(); 
     case 'Raise Ticket':
       return TicketPortalApp();
+    case 'Customized Report':
+      return ReportPage();
+    case 'Analytics':
+      return AnalyticsPage();
     case 'SignOut': 
        return WelcomeScreen();
         

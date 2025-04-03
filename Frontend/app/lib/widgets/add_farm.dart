@@ -103,6 +103,7 @@ class _AddFarmState extends State<AddFarm> {
                           farmField("Location*", 1, "location", _locationController),
                           farmField("Soil Type*", 1, "soil", _soilTypeController),
                           farmField("Area in acres*", 1, "area", _areaController),
+                          farmField("Assign the Co-worker*", 1, "worker", _areaController),
                           Row(
                             children: [
                               Expanded(

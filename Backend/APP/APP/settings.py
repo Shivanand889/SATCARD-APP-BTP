@@ -44,11 +44,13 @@ INSTALLED_APPS = [
     "allauth.account",
     "allauth.socialaccount",
     "allauth.socialaccount.providers.google",
+    'django_celery_beat',
     'home',
     'corsheaders',
     'Farms',
     'activities',
     'TicketPortal',
+    'scheduledTasks',
 ]
 
 SOCIALACCOUNT_PROVIDERS = {
@@ -86,6 +88,11 @@ CORS_ALLOW_ALL_ORIGINS = True
 
 ROOT_URLCONF = 'APP.urls'
 
+TIME_ZONE = 'Asia/Kolkata'
+USE_TZ = True  # Keep it True for consistency
+
+
+
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
@@ -119,6 +126,8 @@ DATABASES = {
         
     }
 }
+
+CELERY_BROKER_URL = 'redis://localhost:6379/0'
 
 
 # Password validation

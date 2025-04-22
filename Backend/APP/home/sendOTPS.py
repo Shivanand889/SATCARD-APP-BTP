@@ -51,7 +51,7 @@ def sendSMS(phone, message):
     
     Message = client.messages.create(
         body = message ,
-        from_ = '+1 617 934 6967',
+        from_ = '+1 934 241 2632',
         to = phone
     )
     print(Message.body)

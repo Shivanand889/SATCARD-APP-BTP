@@ -8,7 +8,10 @@ class Users(models.Model):
     email = models.EmailField(max_length=200, primary_key=True)
     # username = models.CharField(max_length=50, unique=True, default='default_user')
     password = models.CharField(max_length=100, null=False)
-    isManager = models.IntegerField(unique=True,default = 1)  # Use BigIntegerField
+    isManager = models.IntegerField(default = 1)  # Use BigIntegerField
     # is_active = models.BooleanField(default=True)
+    managerEmail = models.EmailField(max_length=200, null=True,default = None)
+
+
 
 

@@ -24,10 +24,15 @@ def AddFarm(request):
     location = request.data.get('location')
     soilType = request.data.get('soil')
     area = request.data.get('area')
-    
+    workerEmail = request.data.get('worker')
     if Farms.objects.filter(name=name).exists():
         return Response({'message' : 'Farm already exist'}, status=500)
 
+    if Users.objects.filter(email=workerEmail).exists():
+        pass
+
+    else : 
+        return Response({'message' : 'Worker Not exist'}, status=500)
     email = cache.get('email')  # Retrieve the email from the cache
 
     try:
@@ -55,6 +60,7 @@ def FarmList(request):
     try:
         # Query all farms and extract their names
         email = cache.get('email')  # Assuming email is stored in the cache during login or session
+        print(email)
         if not email:
             return Response({"error": "User is not logged in or session expired"}, status=401)
 

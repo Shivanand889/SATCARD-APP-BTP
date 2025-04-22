@@ -25,15 +25,28 @@ def generateOTP(request) :
         receiver_email = request.data.get('email')
         name = request.data.get('name')
         password = request.data.get('password')
+        isManager = request.data.get('working_type')
+        managerEmail = request.data.get('manager_email')
         # print("ss")
         if Users.objects.filter(email=receiver_email).exists():
             return Response({'status': 0}, status=500)
         # request.session['email'] = receiver_email
+
+        manager  = 1
+        if isManager == "Worker" :
+            if Users.objects.filter(email=managerEmail).exists():
+                manager = 0
+
+            else :
+                return Response({'status': 0, 'message' : "no such manager"}, status=500)
+
         print("ss")
         cache.set('vtype', 1, timeout=None)
         cache.set('name', name, timeout=None)
         cache.set('email', receiver_email, timeout=None)
         cache.set('password', password, timeout=None)
+        cache.set('manager', manager, timeout=None)
+        cache.set('managerEmail', managerEmail, timeout=None)
         print("ss")
         send_email('OTP', receiver_email, f'your otp is {otp}')
     
@@ -80,7 +93,9 @@ def CheckOTP(request) :
             name=cache.get('name'),
             email=cache.get('email'),
             password=cache.get('password'),  
-            phoneNumber=cache.get('phone')
+            phoneNumber=cache.get('phone'),
+            isManager=cache.get('manager'),  
+            managerEmail=cache.get('managerEmail')
         )
 
         return Response({'success': succ, 'redirect_url': '/dashboard'}, status=200)
@@ -91,7 +106,7 @@ def CheckOTP(request) :
 @api_view(['POST'])
 def LoginViaEmail(request):
     email = request.data.get('email')
-
+    cache.set('email', email, timeout=None)
     if request.data.get('type')=='1' : 
         password = request.data.get('password')
 

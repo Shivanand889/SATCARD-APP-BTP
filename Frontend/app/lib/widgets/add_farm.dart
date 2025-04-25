@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;  // Import the http package
 import 'dart:convert';  // Import to encode the data into JSON
 import 'package:app/responsive.dart';
-
+import 'package:app/utils/global_state.dart';
 class AddFarm extends StatefulWidget {
   const AddFarm({super.key});
 
@@ -27,6 +27,7 @@ class _AddFarmState extends State<AddFarm> {
       'soil': _soilTypeController.text,
       'area': _areaController.text,
       'worker' : _workerController.text,
+      'email' : GlobalState().email ,
     };
 
     // Make the POST request

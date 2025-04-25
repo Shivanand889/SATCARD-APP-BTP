@@ -13,7 +13,8 @@ from django.core.cache import cache
 @api_view(['POST'])
 def RaiseIssue(request) :
     # print(1) 
-    email = cache.get('email')
+    # email = cache.get('email')
+    email = request.data.get('email')
     issue = request.data.get('issue')
     status = "Pending"
     category = request.data.get("category")
@@ -37,7 +38,7 @@ def RaiseIssue(request) :
 
 @api_view(['GET'])
 def GetTickets(request):
-    email = cache.get('email')
+    email = request.GET.get('email')
     try:
         # Fetch the Users instance based on the email
         user = Users.objects.get(email=email)

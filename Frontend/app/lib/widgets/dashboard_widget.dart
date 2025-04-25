@@ -8,6 +8,7 @@ import 'package:app/components/storage_details.dart';
 import 'package:app/responsive.dart';
 import 'package:app/const/constant.dart';
 import 'package:app/models/my_files.dart';
+import 'package:app/utils/global_state.dart';
 
 class DashboardWidget extends StatefulWidget {
   final List<CloudStorageInfo> farmData;
@@ -37,7 +38,7 @@ class _DashboardWidgetState extends State<DashboardWidget> {
     try {
       final response = await http.post(
         url,
-        body: {'name': widget.name},
+        body: {'name': widget.name, 'email': GlobalState().email},
       );
 
       if (response.statusCode == 200) {

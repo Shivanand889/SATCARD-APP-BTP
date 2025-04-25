@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart'; // Import intl package for date formatting
 import 'package:http/http.dart' as http; // Import http package for API requests
 import 'dart:convert'; // Import for JSON encoding
+import 'package:app/utils/global_state.dart';
 
 void showAddActivityDialog(BuildContext context, String name) {
   showDialog(
@@ -65,7 +66,8 @@ class _AddActivityFormState extends State<AddActivityForm> {
     final Map<String, dynamic> payload = {
       'activities': selectedActivityNames,
       'date': _dateController.text,
-      'name': widget.name
+      'name': widget.name,
+      'email' : GlobalState().email,
     };
 
     // Define the backend endpoint

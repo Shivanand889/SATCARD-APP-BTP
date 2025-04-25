@@ -97,8 +97,9 @@ def CheckOTP(request) :
             isManager=cache.get('manager'),  
             managerEmail=cache.get('managerEmail')
         )
-
-        return Response({'success': succ, 'redirect_url': '/dashboard'}, status=200)
+        isManager = user.isManager
+        cache.set('isManager', isManager, timeout=None)
+        return Response({'success': succ, 'redirect_url': '/dashboard' , 'isManager' : isManager}, status=200)
     
     else :
         return Response({'success': succ, 'redirect_url': '/setup-profile'}, status=200)
@@ -119,19 +120,24 @@ def LoginViaEmail(request):
         # hashed_password = make_password(password)
         print(len(cache.get('password')))
         print(len(password))
+        isManager = user.isManager
+        cache.set('isManager', isManager, timeout=None)
         if password != user.password :
             print(1)
             return Response({'message': 'Incorrect password','success' : 0}, status=400)
 
         cache.set('email', email, timeout=None)
-        return Response({'message': 'Login successful','success' : 1},  status=200)
+        return Response({'message': 'Login successful','success' : 1, 'isManager' : isManager},  status=200)
 
     else :
         
         try:
             print("g1")
             user = Users.objects.get(email=email)
-            return Response({'message': 'Login successful','success' : 1},  status=200)
+            isManager = user.isManager
+            print(isManager)
+            cache.set('isManager', isManager, timeout=None)
+            return Response({'message': 'Login successful','success' : 1,'isManager' : isManager},  status=200)
         except Users.DoesNotExist:
             return Response({'message': 'Email not found', 'success' : 0}, status=404)
 

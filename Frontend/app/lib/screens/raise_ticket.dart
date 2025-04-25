@@ -4,7 +4,7 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'dart:io';
 import 'package:app/const/constant.dart'; // Importing constants
-
+import 'package:app/utils/global_state.dart';
 class TicketPortalApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
@@ -51,7 +51,7 @@ class _TicketPortalScreenState extends State<TicketPortalScreen> {
 
   Future<void> fetchTickets() async {
     try {
-      final response = await http.get(Uri.parse('http://127.0.0.1:8000/getTickets'));
+      final response = await http.get(Uri.parse('http://127.0.0.1:8000/getTickets?email=${GlobalState().email}'));
       if (response.statusCode == 200) {
         final Map<String, dynamic> responseData = json.decode(response.body);
         if (responseData.containsKey("data")) {
@@ -94,6 +94,8 @@ class _TicketPortalScreenState extends State<TicketPortalScreen> {
 
         request.fields['issue'] = _issueController.text;
         request.fields['category'] = _selectedCategory!;
+        request.fields['email'] = GlobalState().email;
+
 
         if (_selectedImage != null) {
           request.files.add(await http.MultipartFile.fromPath('image', _selectedImage!.path));

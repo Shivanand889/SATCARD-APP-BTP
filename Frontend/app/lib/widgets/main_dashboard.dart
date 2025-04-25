@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:app/const/constant.dart';
 import 'package:app/components/header.dart';
-
+import 'package:app/utils/global_state.dart';
 class MainDashboard extends StatelessWidget {
   const MainDashboard({Key? key}) : super(key: key);
 

@@ -60,7 +60,7 @@ def calculate_accuracy(outputs, labels):
 def AddActivity(request):
     try:
         # Step 1: Get the email from the cache (session)
-        email = cache.get('email')
+        email = request.data.get('email')
         if not email:
             return Response({"error": "User is not logged in or session expired"}, status=401)
 
@@ -100,7 +100,7 @@ def Suggestions(request):
     Soil = {'red' : 0, 'black' : 1,   'Red' : 0, 'Black' : 1}
     try:
         # Step 1: Get the email from the cache (session)
-        email = cache.get('email')
+        email = request.data.get('email')
         print(email)
         if not email:
             return Response({"error": "User is not logged in or session expired"}, status=401)

@@ -4,7 +4,7 @@ import 'dart:convert';
 import 'package:app/widgets/custom_scarffold.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:logging/logging.dart';  // Import the logging package
-
+import 'package:app/utils/global_state.dart';
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
 
@@ -58,7 +58,13 @@ class _LoginScreenState extends State<LoginScreen> {
       if (response.statusCode == 200 && responseBody['success'] == 1) {
         _logger.info('Login successful');
         // Redirect to another page on successful login
-        Navigator.pushNamed(context, '/dashboard');
+        GlobalState().updateGlobalVariable(responseBody['isManager']);
+        
+        _logger.info("Login successful ${GlobalState().isManager}");
+
+        // if (GlobalState().isManager == 1) {
+          Navigator.pushNamed(context, '/dashboard');
+        // }
       } else {
         _logger.warning('Login failed: ${responseBody['message'] ?? 'Unknown error'}');
         setState(() {
@@ -108,6 +114,10 @@ class _LoginScreenState extends State<LoginScreen> {
       if (response.statusCode == 200) {
         _logger.info('Google login successful');
         // Handle successful login or signup
+        final responseBody = jsonDecode(response.body);
+        GlobalState().updateGlobalVariable(responseBody['isManager']);
+        GlobalState().updateGlobalVariableEmail(email) ;
+        _logger.info("Login successful ${GlobalState().isManager}");
         Navigator.pushNamed(context, '/dashboard');
       } else {
         _logger.warning('Google login failed: ${response.body}');

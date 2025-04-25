@@ -26,20 +26,20 @@ def AddFarm(request):
     area = request.data.get('area')
     workerEmail = request.data.get('worker')
     if Farms.objects.filter(name=name).exists():
-        return Response({'message' : 'Farm already exist'}, status=500)
+        return Response({'message' : 'Farm already exist', 'isManager' : cache.get('isManager')}, status=500)
 
     if Users.objects.filter(email=workerEmail).exists():
         pass
 
     else : 
-        return Response({'message' : 'Worker Not exist'}, status=500)
-    email = cache.get('email')  # Retrieve the email from the cache
+        return Response({'message' : 'Worker Not exist', 'isManager' : cache.get('isManager')}, status=500)
+    email = request.data.get('email')  # Retrieve the email from the cache
 
     try:
         # Fetch the Users instance based on the email
         user = Users.objects.get(email=email)
     except Users.DoesNotExist:
-        return Response({'message': 'User not found for the provided email'}, status=404)
+        return Response({'message': 'User not found for the provided email', 'isManager' : cache.get('isManager')}, status=404)
 
 
     farm = Farms.objects.create(
@@ -53,30 +53,31 @@ def AddFarm(request):
         email=user
     )
 
-    return Response({'message' : 'Farm created succesfully'}, status=200)
+    return Response({'message' : 'Farm created succesfully', 'isManager' : cache.get('isManager')}, status=200)
 
 @api_view(['GET'])
 def FarmList(request):
     try:
         # Query all farms and extract their names
-        email = cache.get('email')  # Assuming email is stored in the cache during login or session
+        # email = cache.get('email')  # Assuming email is stored in the cache during login or session
+        email = request.GET.get('email')
         print(email)
         if not email:
-            return Response({"error": "User is not logged in or session expired"}, status=401)
+            return Response({"error": "User is not logged in or session expired", 'isManager' : cache.get('isManager')}, status=401)
 
         # Step 2: Verify that the email corresponds to a valid user
         user = Users.objects.filter(email=email).first()
         if not user:
-            return Response({"error": "User not found"}, status=404)
+            return Response({"error": "User not found", 'isManager' : cache.get('isManager')}, status=404)
 
         # Step 3: Get the list of farms associated with the user
         farms = Farms.objects.filter(email=user).values_list('name', flat=True)
         farms_list = list(farms)
         print(farms_list)
         # Step 4: Return the list of farm names
-        return Response({"farms": farms_list}, status=200)
+        return Response({"farms": farms_list, 'isManager' : cache.get('isManager')}, status=200)
     except Exception as e:
-        return Response({"error": str(e)}, status=500)
+        return Response({"error": str(e), 'isManager' : cache.get('isManager')}, status=500)
 
 @api_view(['GET'])
 def FarmData(request):
@@ -84,23 +85,23 @@ def FarmData(request):
         farmName = request.GET.get('farmName')
         print(farmName)
         if not farmName:
-            return Response({"error": "Farm name is required"}, status=400)
+            return Response({"error": "Farm name is required", 'isManager' : cache.get('isManager')}, status=400)
 
-        email = cache.get('email')  # Retrieve the email stored in the cache
+        email = request.GET.get('email')  # Retrieve the email stored in the cache
         if not email:
-            return Response({"error": "User is not logged in or session expired"}, status=401)
+            return Response({"error": "User is not logged in or session expired", 'isManager' : cache.get('isManager')}, status=401)
 
         # Step 3: Verify that the email corresponds to a valid user
         user = Users.objects.filter(email=email).first()
         if not user:
-            return Response({"error": "User not found"}, status=404)
+            return Response({"error": "User not found", 'isManager' : cache.get('isManager')}, status=404)
 
         # Step 4: Query the Farms table to find the farm with the matching farmName and email
         print(2)
         farm = Farms.objects.filter(name=farmName, email=user).first()
         print(3)
         if not farm:
-            return Response({"error": "Farm not found"}, status=404)
+            return Response({"error": "Farm not found", 'isManager' : cache.get('isManager')}, status=404)
 
         # Step 5: Return the farm data (all fields from the Farms table)
 
@@ -171,7 +172,7 @@ def DownloadActivityDetails(request):
     Soil = {'red' : 0, 'black' : 1,   'Red' : 0, 'Black' : 1}
     try:
         # Step 1: Get the email from the cache (session)
-        email = cache.get('email')
+        email = request.data.get('email')
         print(email)
         if not email:
             return Response({"error": "User is not logged in or session expired"}, status=401)

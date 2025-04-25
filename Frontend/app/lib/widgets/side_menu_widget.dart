@@ -12,7 +12,7 @@ import 'package:app/widgets/add_farm.dart';
 import 'package:app/widgets/dashboard_widget.dart';
 import 'package:app/widgets/main_dashboard.dart';
 import 'package:app/const/constant.dart';
-
+import 'package:app/utils/global_state.dart';
 class SideMenuWidget extends StatefulWidget {
   final Function(Widget) onMenuTap;
 
@@ -37,7 +37,13 @@ class _SideMenuWidgetState extends State<SideMenuWidget> {
   Future<void> fetchFarmData() async {
     const url = 'http://127.0.0.1:8000/farmList'; // Replace with actual API URL
     try {
-      final response = await http.get(Uri.parse(url));
+      final response = await http.get(
+        Uri.parse('$url?email=${GlobalState().email}'),  // Ensuring correct query string format
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      );
+
 
       if (response.statusCode == 200) {
         // Parse the response body to get the farm names
@@ -65,10 +71,10 @@ class _SideMenuWidgetState extends State<SideMenuWidget> {
   }
 
  Future<Map<String, dynamic>>  fetchFarmRelatedData(String farmName) async {
-  const url = 'http://127.0.0.1:8000/farmData'; // Replace with actual API URL
+  var url = 'http://127.0.0.1:8000/farmData'; // Replace with actual API URL
   try {
     // Append farm name to the API endpoint or pass as query parameters
-    final response = await http.get(Uri.parse('$url?farmName=$farmName'));
+    final response = await http.get(Uri.parse('$url?email=${GlobalState().email}&farmName=$farmName'));
 
     if (response.statusCode == 200) {
       // Parse the response body to get the farm data
@@ -132,7 +138,7 @@ class _SideMenuWidgetState extends State<SideMenuWidget> {
     final menuItem = data.menu[index];
     final hasSubmenus = menuItem.submenus != null && menuItem.submenus!.isNotEmpty;
     final isFarmsMenu = menuItem.title == 'Farms';
-
+    final IsManager = GlobalState().isManager ;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -237,8 +243,8 @@ class _SideMenuWidgetState extends State<SideMenuWidget> {
       return ReportPage();
     case 'Analytics':
       return AnalyticsPage();
-    case 'SignOut': 
-       return WelcomeScreen();
+    // case 'SignOut': 
+    //    return WelcomeScreen();
         
     default:
       return FutureBuilder<Map<String, dynamic>>(

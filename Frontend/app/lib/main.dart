@@ -16,12 +16,9 @@ void main() {
 
 void _initializeLogger() {
   // Set the root logger level
-  Logger.root.level = Level.ALL; // Set the desired log level
-
-  // Listen for log records
-  Logger.root.onRecord.listen((LogRecord rec) {
-    // You can change this to log to a file, remote server, etc.
-    print('${rec.level.name}: ${rec.time}: ${rec.message}');
+  Logger.root.level = Level.ALL; // log all messages
+  Logger.root.onRecord.listen((record) {
+    debugPrint('${record.level.name}: ${record.time}: ${record.message}');
   });
 }
 

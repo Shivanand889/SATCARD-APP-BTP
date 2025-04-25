@@ -6,7 +6,7 @@ import 'package:app/models/recent_file.dart';
 import 'package:app/const/constant.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:intl/intl.dart'; // For date formatting
-
+import 'package:app/utils/global_state.dart';
 class RecentFiles extends StatefulWidget {
   final List<dynamic> activityData;
   final String farmName;
@@ -48,6 +48,7 @@ print("Formatted To Date: ${toDate != null ? DateFormat('yyyy-MM-dd').format(toD
         "name": widget.farmName,
         "from_date": fromDate != null ? DateFormat('yyyy-MM-dd').format(fromDate!) : null,
         "to_date": toDate != null ? DateFormat('yyyy-MM-dd').format(toDate!) : null,
+        "email" : GlobalState().email
       }),
     );
 

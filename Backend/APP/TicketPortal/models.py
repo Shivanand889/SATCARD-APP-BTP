@@ -7,6 +7,7 @@ class Tickets(models.Model):
     issue = models.TextField(null=False, default='')
     category = models.TextField(null=False, default='')
     issueDate = models.DateField(null=False, default=timezone.now)  # Default value for date
-    email = models.ForeignKey(Users, on_delete=models.CASCADE, to_field='email', default='')
-    status = models.TextField(null=False, default='')
+    email = models.ForeignKey(Users,on_delete=models.CASCADE,to_field='email', db_column='email')    
+    status = models.TextField(null=False, default='Pending')
+    closingDate = models.DateField(null=True, default=None)
     

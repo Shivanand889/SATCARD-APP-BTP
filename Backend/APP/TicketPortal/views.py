@@ -8,6 +8,7 @@ from .serializers import TicketsSerializer
 # from .sendOTPS import *
 from django.contrib.auth import logout
 from django.core.cache import cache
+from datetime import timedelta
 
 
 @api_view(['POST'])
@@ -67,9 +68,53 @@ def GetTickets(request):
         return Response({'message': "An error occurred"}, status=500)  # Add return here
 
 
-    
-    
+@api_view(['POST'])
+def TicketAnalytics(request) :
+    email = request.data.get('email')
 
-    
+    try:
+        # Get all users who report to the manager
+        workers = Users.objects.filter(managerEmail=email)
+    except Exception as e:
+        print(f"Worker fetch error: {e}")
+        return Response({'message': 'Error occurred while fetching workers'}, status=404)
 
+    try:
+        resolution = {}
+        resolvedCount = 0
+        openCount = 0
+        ticketsOverTime = {}
+        for worker in workers:
+            # Since email is a foreign key, we can query using the user object
+            resolved_tickets = Tickets.objects.filter(email_id=worker, status="Solved")
 
+            for ticket in resolved_tickets:
+                if str(ticket.issueDate) not in ticketsOverTime.keys() : 
+                    ticketsOverTime[str(ticket.issueDate)] = 1
+
+                else : 
+                    ticketsOverTime[str(ticket.issueDate)] += 1
+                resolvedCount +=1
+                duration = ticket.closingDate - ticket.issueDate
+                t_hours = int(duration.total_seconds() // (24*3600))  # convert to hours
+
+                resolution[t_hours] = resolution.get(t_hours, 0) + 1
+
+        for worker in workers:
+            # Since email is a foreign key, we can query using the user object
+            nonresolved_tickets = Tickets.objects.filter(email=worker, status="Pending")
+            
+            for ticket in nonresolved_tickets:
+                if str(ticket.issueDate) not in ticketsOverTime.keys() : 
+                    ticketsOverTime[str(ticket.issueDate)] = 1
+
+                else : 
+                    ticketsOverTime[str(ticket.issueDate)] += 1
+                openCount +=1
+               
+
+        return Response({'resolution': resolution,'resolvedCount' : resolvedCount,'openCount':openCount, 'ticketsOverTime' : ticketsOverTime }, status=200, )
+
+    except Exception as e:
+        print(f"Exception is: {e}")
+        return Response({'message': "Error occurred while processing tickets"}, status=500)

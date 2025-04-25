@@ -18,7 +18,7 @@ class SideMenuData {
     if (GlobalState().isManager == 0)
       MenuModel(icon: Icons.support, title: 'Raise Ticket'),
     MenuModel(icon: Icons.support, title: 'Customized Report'),
-    if (GlobalState().isManager == 0)
+    if (GlobalState().isManager == 1)
       MenuModel(icon: Icons.support, title: 'Analytics'),
     MenuModel(icon: Icons.logout, title: 'SignOut'),
   ];

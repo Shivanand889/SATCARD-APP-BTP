@@ -39,6 +39,7 @@ urlpatterns = [
     path("downloadActivityDetails",DownloadActivityDetails, name = 'DownloadActivityDetails'),
     
     path("getTickets",GetTickets, name = 'GetTickets'),
+    path("ticketAnalytics",TicketAnalytics, name = 'TicketAnalytics'),
     # path("", include('googleauthentication.urls')),
     # path('accounts/', google_login_redirect, name='google_login'),
     path("accounts/", include("allauth.urls")),

@@ -26,7 +26,7 @@ class _AddFarmState extends State<AddFarm> {
       'location': _locationController.text,
       'soil': _soilTypeController.text,
       'area': _areaController.text,
-      'worker' : _workerController.text,
+      // 'worker' : _workerController.text,
       'email' : GlobalState().email ,
     };
 
@@ -46,7 +46,7 @@ class _AddFarmState extends State<AddFarm> {
     _locationController.clear();
     _soilTypeController.clear();
     _areaController.clear();
-    _workerController.clear();
+    // _workerController.clear();
 
     // Show a success message
     ScaffoldMessenger.of(context).showSnackBar(
@@ -106,7 +106,7 @@ class _AddFarmState extends State<AddFarm> {
                           farmField("Location*", 1, "location", _locationController),
                           farmField("Soil Type*", 1, "soil", _soilTypeController),
                           farmField("Area in acres*", 1, "area", _areaController),
-                          farmField("Assign the Co-worker*", 1, "worker", _workerController),
+                          // farmField("Assign the Co-worker*", 1, "worker", _workerController),
                           Row(
                             children: [
                               Expanded(

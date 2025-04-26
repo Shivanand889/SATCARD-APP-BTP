@@ -12,6 +12,6 @@ class Farms(models.Model):
     cropName  = models.CharField(max_length=50, default='crop')
     soilType  = models.CharField(max_length=50, default='crop')
     area = models.IntegerField(default=0)
-    workerEmail = models.EmailField(max_length=200, null=False)
+    # workerEmail = models.EmailField(max_length=200, null=False)
     
     

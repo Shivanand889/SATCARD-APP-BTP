@@ -1,8 +1,8 @@
 from django.shortcuts import render, redirect
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
-from .models import Activity
-from .serializers import ActivitySerializer
+from .models import *
+from .serializers import *
 from django.contrib.auth import logout
 from django.core.cache import cache
 from home.models import Users
@@ -15,7 +15,7 @@ import numpy
 import torch
 import torch.nn as nn
 import torch.optim as optim
-
+from django.utils import timezone
 
 class LSTMModel(nn.Module):
     def __init__(self, input_dim, hidden_dim, output_dim, num_layers, dropout_prob=0.5):
@@ -105,6 +105,7 @@ def Suggestions(request):
         if not email:
             return Response({"error": "User is not logged in or session expired"}, status=401)
 
+        
         farmName = request.data.get('name')
         print(farmName)
         if not farmName:
@@ -112,6 +113,22 @@ def Suggestions(request):
 
         # Step 2: Verify that the user is valid
         user = Users.objects.filter(email=email).first()
+        
+        workers = Users.objects.filter(managerEmail=email)
+        suggest =[]
+        
+        for i in workers : 
+            task = Tasks.objects.filter(
+                farmName=farmName,
+                assignedDate=timezone.now(),
+                email = i
+            )
+
+            for j in task :
+                suggest.append([j.activityName, j.status])
+        
+        if(len(suggest) !=0) : 
+            return Response({"data": work}, status=200)
         # print(2)
         try :
             farm = Farms.objects.filter(email=user, name=farmName).first()
@@ -127,23 +144,36 @@ def Suggestions(request):
             return Response({"error": "User not found"}, status=404)
 
         # Step 3: Query distinct dates from the Activity table
-        distinct_dates = (
-            Activity.objects.filter(Q(email=email) & Q(farmName=farmName))
-            .order_by('-date')  # Order by date descending
-            .values_list('date', flat=True)  # Get only the date column
-            .distinct()  # Ensure distinct dates
-        )
+        print("work1")
+        last_4_dates = set()
+
+        for i in workers : 
+            try :
+                print(1)
+                distinct_dates = (
+                    Tasks.objects.filter(Q(email=i) & Q(farmName=farmName) & Q(status = "Completed"))
+                    .order_by('-completionDate')  # Order by date descending
+                    .values_list('completionDate', flat=True)  # Get only the date column
+                    .distinct()  # Ensure distinct dates
+                )
+                print(2)
+                last_4_dates.update(distinct_dates)
+
+            except Exception as e :
+                print(e)
+        print("z")
+        last_4_dates = sorted(list(last_4_dates))[:4]
+        print("work2")
         
-        last_4_dates = list(distinct_dates[:4])
         print(len(last_4_dates))
         if len(last_4_dates)==0 :
-            return Response({"data": ['ploughing','mulching']}, status=200)
+            return Response({"data": [['ploughing','Pending'],['mulching','Pending']]}, status=200)
 
         if len(last_4_dates)==1 :
-            return Response({"data": ['sowing']}, status=200)
+            return Response({"data": [['sowing','Pending']]}, status=200)
 
         if len(last_4_dates)<4 :
-            return Response({"data": ['irrigation']}, status=200)
+            return Response({"data": [['irrigation','Pending']]}, status=200)
 
         l_date = []
         for i in last_4_dates :
@@ -160,7 +190,7 @@ def Suggestions(request):
          # Take the first 4 from the ordered list
 
         rows = (
-            Activity.objects.filter(Q(email=email) & Q(farmName=farmName))
+            Tasks.objects.filter(Q(email=email) & Q(farmName=farmName) & Q(status = "Completed"))
         )
         # print(3)
         day = 0 
@@ -218,12 +248,109 @@ def Suggestions(request):
         activityList = list(activities.keys())
         for i in range(len(activities)):
             if prediction[0][i] >= 0.4:
-                work.append(activityList[i])
+                work.append([activityList[i], "Pending"])
 
         print(work)
         # except Exception as e:
         #     print(e)
         return Response({"data": work}, status=200)
 
+    except Exception as e:
+        return Response({"error": str(e)}, status=500)
+
+
+@api_view(['POST'])
+def AddTasks(request):
+    try:
+        # Step 1: Get the email from the cache (session)
+        # email = request.data.get('email')
+        workerEmail = request.data.get('workerEmail')
+        if not email:
+            return Response({"error": "User is not logged in or session expired"}, status=401)
+
+        farmName = request.data.get('name')
+        activity = request.data.get('activity')  # Ensure this is a list
+
+        # Step 2: Verify that the user is valid
+        user = Users.objects.filter(email=workerEmail).first()
+        if not user:
+            return Response({"error": "User not found"}, status=404)
+
+       
+       
+        Tasks.objects.create(
+            farmName=farmName,
+            email=user,
+            activityName=activity,
+            
+        )
+        return Response({"message": "Task added successfully"}, status=200)
+       
+    except Exception as e:
+        return Response({"error": str(e)}, status=500)
+
+
+@api_view(['POST'])
+def UpdateTasks(request):
+    try:
+        # Step 1: Get the email from the cache (session)
+        # email = request.data.get('email')
+        workerEmail = request.data.get('workerEmail')
+        if not email:
+            return Response({"error": "User is not logged in or session expired"}, status=401)
+
+        farmName = request.data.get('name')
+        activity = request.data.get('activity')  # Ensure this is a list
+        dateAssigned = request.data.get('date')
+        # Step 2: Verify that the user is valid
+        user = Users.objects.filter(email=workerEmail).first()
+        if not user:
+            return Response({"error": "User not found"}, status=404)
+
+        headers = {"accept": "application/json"}
+        url = f"https://api.tomorrow.io/v4/weather/forecast?location={farm.location}&apikey=OMbq1FMmdpBv8I2bjdzFEA8zeXMCIPUT"
+        print(url)
+        weather_data = {'rain' : 0,
+            'wind' : 0,
+            'temperature' : 0,
+            'precipitation' : 0,
+            'humidity' : 0
+            }
+        try :
+            response = requests.get(url, headers=headers)
+            print(4)
+            # Convert the response text into a dictionary
+            response_dict = json.loads(response.text)
+
+            # Print the dictionary
+            print(5)
+            print(response_dict)
+            
+            weather_data = {
+                'rain' : response_dict['timelines']['daily'][0]['values']['rainAccumulationAvg'],
+                'wind' : response_dict['timelines']['daily'][0]['values']['windSpeedAvg'],
+                'temperature' : response_dict['timelines']['daily'][0]['values']['temperatureApparentAvg'],
+                'precipitation' : response_dict['timelines']['daily'][0]['values']['precipitationProbabilityAvg'],
+                'humidity' : response_dict['timelines']['daily'][0]['values']['humidityAvg']
+            }
+
+        except Exception as e:
+            print(e)
+       
+        task = Tasks.objects.get(
+            farmName=farmName,
+            email=user,
+            activityName=activity,
+            assignedDate=dateAssigned
+        )
+        task.completionDate = timezone.now()
+        task.gdd = weather_data["temperature"]
+        task.rain = weather_data["rain"]
+        task.humidity = weather_data["humidity"]
+        task.wind = weather_data["wind"]
+
+        task.save()
+        return Response({"message": "Task updated successfully"}, status=200)
+       
     except Exception as e:
         return Response({"error": str(e)}, status=500)

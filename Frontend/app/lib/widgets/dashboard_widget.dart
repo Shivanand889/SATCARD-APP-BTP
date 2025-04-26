@@ -30,7 +30,7 @@ class DashboardWidget extends StatefulWidget {
 
 class _DashboardWidgetState extends State<DashboardWidget> {
   bool showSuggestions = false; // Track if the suggestions box is visible
-  List<String> suggestions = []; // Store the fetched suggestions
+  List<List<String>> suggestions = []; // Store the fetched suggestions
 
   Future<void> fetchSuggestions() async {
     final url = Uri.parse('http://127.0.0.1:8000/suggestions');
@@ -45,7 +45,9 @@ class _DashboardWidgetState extends State<DashboardWidget> {
         // Decode the response and update suggestions
         final data = json.decode(response.body);
         setState(() {
-          suggestions = List<String>.from(data['data']); // Extract from "data" key
+         suggestions = List<List<String>>.from(
+            data['data'].map((item) => List<String>.from(item))
+          );// Extract from "data" key
           showSuggestions = true;
         });
       } else {
@@ -129,7 +131,7 @@ class _DashboardWidgetState extends State<DashboardWidget> {
                                   return Padding(
                                     padding: const EdgeInsets.symmetric(vertical: 4.0),
                                     child: Text(
-                                      "${index + 1}. ${suggestions[index]}",
+                                      "${index + 1}. ${suggestions[index][0]}",
                                       style: TextStyle(fontSize: 14),
                                     ),
                                   );

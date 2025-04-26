@@ -24,15 +24,11 @@ def AddFarm(request):
     location = request.data.get('location')
     soilType = request.data.get('soil')
     area = request.data.get('area')
-    workerEmail = request.data.get('worker')
+    # workerEmail = request.data.get('worker')
+    print(1)
     if Farms.objects.filter(name=name).exists():
         return Response({'message' : 'Farm already exist', 'isManager' : cache.get('isManager')}, status=500)
 
-    if Users.objects.filter(email=workerEmail).exists():
-        pass
-
-    else : 
-        return Response({'message' : 'Worker Not exist', 'isManager' : cache.get('isManager')}, status=500)
     email = request.data.get('email')  # Retrieve the email from the cache
 
     try:

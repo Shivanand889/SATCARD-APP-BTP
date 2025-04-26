@@ -14,9 +14,10 @@ class SideMenuData {
       submenus: [MenuModel(icon: Icons.agriculture, title: 'Farm 4'),
         MenuModel(icon: Icons.agriculture, title: 'Farm 1'),], // Initially empty, can be updated dynamically
     ),
-   
+   MenuModel(icon: Icons.support, title: 'Assigned Activity'),
     if (GlobalState().isManager == 0)
       MenuModel(icon: Icons.support, title: 'Raise Ticket'),
+    MenuModel(icon: Icons.support, title: 'All Tickets'),
     MenuModel(icon: Icons.support, title: 'Customized Report'),
     if (GlobalState().isManager == 1)
       MenuModel(icon: Icons.support, title: 'Analytics'),

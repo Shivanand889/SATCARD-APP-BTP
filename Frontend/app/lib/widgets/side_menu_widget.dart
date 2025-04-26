@@ -1,4 +1,6 @@
 import 'dart:convert'; // For JSON decoding
+import 'package:app/screens/assigned_activity.dart';
+import 'package:app/screens/solving_ticket.dart';
 import 'package:app/screens/welcome_screen.dart';
 import 'package:app/screens/raise_ticket.dart';
 import 'package:app/screens/customized_report.dart';
@@ -243,8 +245,12 @@ class _SideMenuWidgetState extends State<SideMenuWidget> {
       return const AddFarm();
     case 'Dashboard':
       return MainDashboard(); 
+    case 'Assigned Activity':
+      return WorkerActivityPage();
     case 'Raise Ticket':
       return TicketPortalApp();
+    case 'All Tickets':
+      return TicketManagerPage();
     case 'Customized Report':
       return ReportPage();
     case 'Analytics':

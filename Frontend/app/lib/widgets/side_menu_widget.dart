@@ -201,6 +201,12 @@ class _SideMenuWidgetState extends State<SideMenuWidget> {
                 child: InkWell(
                   onTap: () {
                     // Handle submenu item tap
+                    if (submenu.title == 'SignOut') {
+                      Navigator.pushReplacement(
+                        context,
+                        MaterialPageRoute(builder: (context) => WelcomeScreen()),
+                      );
+                    } 
                     widget.onMenuTap(_getWidgetForMenu(submenu.title));
                   },
                   child: Container(
@@ -243,8 +249,15 @@ class _SideMenuWidgetState extends State<SideMenuWidget> {
       return ReportPage();
     case 'Analytics':
       return AnalyticsPage();
-    // case 'SignOut': 
-    //    return WelcomeScreen();
+    case 'SignOut': 
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+        Navigator.pushAndRemoveUntil(
+          context,
+          MaterialPageRoute(builder: (context) => WelcomeScreen()),
+          (route) => false, // Remove all previous routes
+        );
+      });
+      return Container();
         
     default:
       return FutureBuilder<Map<String, dynamic>>(

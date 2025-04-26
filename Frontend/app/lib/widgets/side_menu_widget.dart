@@ -138,7 +138,6 @@ class _SideMenuWidgetState extends State<SideMenuWidget> {
     final menuItem = data.menu[index];
     final hasSubmenus = menuItem.submenus != null && menuItem.submenus!.isNotEmpty;
     final isFarmsMenu = menuItem.title == 'Farms';
-    final IsManager = GlobalState().isManager ;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [

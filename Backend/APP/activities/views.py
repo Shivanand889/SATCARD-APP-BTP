@@ -354,3 +354,64 @@ def UpdateTasks(request):
        
     except Exception as e:
         return Response({"error": str(e)}, status=500)
+
+@api_view(['POST'])
+def TaskAnalytics(request):
+    email = request.data.get('email')
+    print(email)
+    try:
+        # Get all users who report to the manager
+        workers = Users.objects.filter(managerEmail=email)
+    except Exception as e:
+        print(f"Worker fetch error: {e}")
+        return Response({'message': 'Error occurred while fetching workers'}, status=404)
+
+    try:
+        resolution = {}
+        completed = 0
+        pending = 0
+        ticketsOverTime = {}
+        for worker in workers:
+            # Since email is a foreign key, we can query using the user object
+            completed_tasks = Tasks.objects.filter(email_id=worker, status="Completed")
+
+            for task in completed_tasks:
+                # if str(ticket.issueDate) not in ticketsOverTime.keys() : 
+                #     ticketsOverTime[str(ticket.issueDate)] = 1
+
+                # else : 
+                #     ticketsOverTime[str(ticket.issueDate)] += 1
+                completed_tasks +=1
+                # duration = ticket.closingDate - ticket.issueDate
+                # t_hours = int(duration.total_seconds() // (24*3600))  # convert to hours
+
+                # if ticket.category not in resolution.keys() :
+                #     resolution[ticket.category] = {}
+                #     resolution[ticket.category][t_hours] = 1
+
+
+                # else :
+                #     if ticket.category not in resolution[t_hours].keys() :
+                #         resolution[ticket.category][t_hours] = 1
+
+                #     else :
+                #         resolution[ticket.category][t_hours] += 1
+
+        for worker in workers:
+            # Since email is a foreign key, we can query using the user object
+            pending_tasks = Tasks.objects.filter(email=worker, status="Pending")
+            
+            for task in pending_tasks:
+            #     if str(ticket.issueDate) not in ticketsOverTime.keys() : 
+            #         ticketsOverTime[str(ticket.issueDate)] = 1
+
+            #     else : 
+            #         ticketsOverTime[str(ticket.issueDate)] += 1
+                pending +=1
+               
+
+        return Response({'resolution': resolution,'pending' : pending,'openCount':openCount, 'completed' : completed }, status=200, )
+
+    except Exception as e:
+        print(f"Exception is: {e}")
+        return Response({'message': "Error occurred while processing tickets"}, status=500)

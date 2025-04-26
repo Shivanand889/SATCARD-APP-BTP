@@ -8,9 +8,10 @@ import 'package:app/screens/otp_screen.dart';
 import 'package:app/screens/setup_profile.dart';
 import 'package:app/screens/raise_ticket.dart';
 import 'package:logging/logging.dart';
+import 'package:app/utils/global_state.dart';
 void main() {
   _initializeLogger();
-
+  GlobalState().loadFromSessionStorage();
   runApp(const MyApp());
 }
 

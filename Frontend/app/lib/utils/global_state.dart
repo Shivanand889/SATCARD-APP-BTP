@@ -1,4 +1,5 @@
-// lib/utils/global_state.dart
+import 'dart:html' as html;
+
 class GlobalState {
   static final GlobalState _instance = GlobalState._internal();
 
@@ -8,14 +9,21 @@ class GlobalState {
 
   GlobalState._internal();
 
-  // Declare your global variables
-  int isManager =1 ;
-  String email = "" ;
-  // Method to modify the global variable
+  int isManager = 1;
+  String email = "";
+
+  void loadFromSessionStorage() {
+    email = html.window.sessionStorage['email'] ?? "";
+    isManager = int.tryParse(html.window.sessionStorage['isManager'] ?? '1') ?? 1;
+  }
+
   void updateGlobalVariable(int newValue) {
     isManager = newValue;
+    html.window.sessionStorage['isManager'] = newValue.toString();
   }
+
   void updateGlobalVariableEmail(String newValue) {
     email = newValue;
+    html.window.sessionStorage['email'] = newValue;
   }
 }

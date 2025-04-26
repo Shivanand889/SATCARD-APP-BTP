@@ -71,7 +71,7 @@ def GetTickets(request):
 @api_view(['POST'])
 def TicketAnalytics(request) :
     email = request.data.get('email')
-
+    print(email)
     try:
         # Get all users who report to the manager
         workers = Users.objects.filter(managerEmail=email)
@@ -98,7 +98,17 @@ def TicketAnalytics(request) :
                 duration = ticket.closingDate - ticket.issueDate
                 t_hours = int(duration.total_seconds() // (24*3600))  # convert to hours
 
-                resolution[t_hours] = resolution.get(t_hours, 0) + 1
+                if ticket.category not in resolution.keys() :
+                    resolution[ticket.category] = {}
+                    resolution[ticket.category][t_hours] = 1
+
+
+                else :
+                    if ticket.category not in resolution[t_hours].keys() :
+                        resolution[ticket.category][t_hours] = 1
+
+                    else :
+                        resolution[ticket.category][t_hours] += 1
 
         for worker in workers:
             # Since email is a foreign key, we can query using the user object

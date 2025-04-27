@@ -43,6 +43,7 @@ urlpatterns = [
     path("getTasks",GetTasks, name = 'GetTasks'),
     path("getAllTickets",GetAllTickets, name = 'GetAllTickets'),
     path("updateTickets",UpdateTickets, name = 'UpdateTickets'),
+    path("addTasks",AddTasks, name = 'AddTasks'),
     # path("", include('googleauthentication.urls')),
     # path('accounts/', google_login_redirect, name='google_login'),
     path("accounts/", include("allauth.urls")),

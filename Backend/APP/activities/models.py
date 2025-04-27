@@ -21,7 +21,7 @@ class Tasks(models.Model):
     assignedDate = models.DateTimeField(null=False, default=timezone.now)  # Default value for date
     farmName = models.CharField(max_length=50, null=False, default='')
     email = models.ForeignKey(Users, on_delete=models.CASCADE, to_field='email', default='')
-    completionDate = models.DateTimeField(default = None)  # Default value for date
+    completionDate = models.DateTimeField(null = True ,default = None)  # Default value for date
     status = models.CharField(max_length=50, null=False, default='Pending')
     gdd = models.IntegerField(default=0)
     rain = models.IntegerField(default=0)

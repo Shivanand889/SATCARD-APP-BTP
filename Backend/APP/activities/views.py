@@ -116,19 +116,20 @@ def Suggestions(request):
         
         workers = Users.objects.filter(managerEmail=email)
         suggest =[]
-        
+        workerNames = []
         for i in workers : 
             task = Tasks.objects.filter(
                 farmName=farmName,
                 assignedDate=timezone.now(),
                 email = i
             )
-
+            workerNames.append([i.name, i.email])
             for j in task :
                 suggest.append([j.activityName, j.status])
         
+        print(workerNames)
         if(len(suggest) !=0) : 
-            return Response({"data": work}, status=200)
+            return Response({"data": work, 'workerNames' : workerNames}, status=200)
         # print(2)
         try :
             farm = Farms.objects.filter(email=user, name=farmName).first()
@@ -167,13 +168,12 @@ def Suggestions(request):
         
         print(len(last_4_dates))
         if len(last_4_dates)==0 :
-            return Response({"data": [['ploughing','Pending'],['mulching','Pending']]}, status=200)
-
+            return Response({"data": [['ploughing','Pending'],['mulching','Pending']], 'workerNames' : workerNames}, status=200)
         if len(last_4_dates)==1 :
-            return Response({"data": [['sowing','Pending']]}, status=200)
+            return Response({"data": [['sowing','Pending']], 'workerNames' : workerNames}, status=200)
 
         if len(last_4_dates)<4 :
-            return Response({"data": [['irrigation','Pending']]}, status=200)
+            return Response({"data": [['irrigation','Pending']], 'workerNames' : workerNames}, status=200)
 
         l_date = []
         for i in last_4_dates :
@@ -253,7 +253,7 @@ def Suggestions(request):
         print(work)
         # except Exception as e:
         #     print(e)
-        return Response({"data": work}, status=200)
+        return Response({"data": work, 'workerNames' : workerNames}, status=200)
 
     except Exception as e:
         return Response({"error": str(e)}, status=500)
@@ -265,12 +265,14 @@ def AddTasks(request):
         # Step 1: Get the email from the cache (session)
         # email = request.data.get('email')
         workerEmail = request.data.get('workerEmail')
-        if not email:
+        print(workerEmail)
+        if not workerEmail:
             return Response({"error": "User is not logged in or session expired"}, status=401)
 
-        farmName = request.data.get('name')
+        farmName = request.data.get('farmName')
+        print(farmName)
         activity = request.data.get('activity')  # Ensure this is a list
-
+        print(activity)
         # Step 2: Verify that the user is valid
         user = Users.objects.filter(email=workerEmail).first()
         if not user:

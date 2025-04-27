@@ -96,6 +96,10 @@ class LineChartWidget extends StatelessWidget {
       return FlSpot(index.toDouble(), (ticketsOverTime[date] as num).toDouble());
     }).toList();
 
+    if (spots.isEmpty) {
+      return const Center(child: Text("No ticket data available"));
+    }
+
     return LineChart(
       LineChartData(
         titlesData: FlTitlesData(
@@ -151,18 +155,27 @@ class PieChartWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final statusData = [
-      {"status": "Open", "count": openCount},
-      {"status": "Resolved", "count": resolvedCount},
-    ];
+    final bool hasData = openCount > 0 || resolvedCount > 0;
+    final statusData = hasData
+        ? [
+            {"status": "Open", "count": openCount},
+            {"status": "Resolved", "count": resolvedCount},
+          ]
+        : [
+            {"status": "No Data", "count": 1},
+          ];
 
     return PieChart(
       PieChartData(
         sections: statusData.map((data) {
           return PieChartSectionData(
             value: (data["count"] as num).toDouble(),
-            title: "${data["status"]}\n${data["count"]}",
-            color: data["status"] == "Open" ? Colors.red : Colors.green,
+            title: data["status"] == "No Data" ? "No Data" : "${data["status"]}\n${data["count"]}",
+            color: data["status"] == "Open"
+                ? Colors.red
+                : data["status"] == "Resolved"
+                    ? Colors.green
+                    : Colors.grey,
             radius: 60,
           );
         }).toList(),
@@ -176,7 +189,6 @@ class BarChartWidget extends StatelessWidget {
 
   const BarChartWidget({super.key, required this.resolution});
 
-  // Define colors for each category
   final Map<String, Color> categoryColors = const {
     'Irrigation': Colors.blue,
     'Soil Health': Colors.green,
@@ -186,19 +198,22 @@ class BarChartWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    if (resolution.isEmpty) {
+      return const Center(child: Text("No resolution data available"));
+    }
+
     final categories = resolution.keys.toList();
     final barGroups = <BarChartGroupData>[];
 
-    // Find max value for Y-axis scaling
     double maxY = resolution.values.reduce((a, b) => a > b ? a : b).toDouble();
-    maxY = maxY.ceilToDouble(); // Round up to nearest integer
+    maxY = maxY.ceilToDouble();
 
     for (int i = 0; i < categories.length; i++) {
       final avgTime = resolution[categories[i]];
       if (avgTime != null) {
         final doubleValue = (avgTime as num).toDouble();
         final color = categoryColors[categories[i]] ?? Colors.grey;
-        
+
         barGroups.add(
           BarChartGroupData(
             x: i,
@@ -217,7 +232,7 @@ class BarChartWidget extends StatelessWidget {
     return BarChart(
       BarChartData(
         barGroups: barGroups,
-        maxY: maxY, // Set max Y value based on data
+        maxY: maxY,
         titlesData: FlTitlesData(
           bottomTitles: AxisTitles(
             axisNameWidget: const Padding(
@@ -251,9 +266,8 @@ class BarChartWidget extends StatelessWidget {
             sideTitles: SideTitles(
               showTitles: true,
               reservedSize: 40,
-              interval: 1, // Show labels at 1 unit intervals
+              interval: 1,
               getTitlesWidget: (value, meta) {
-                // Show decimal places only if needed
                 if (value == value.toInt()) {
                   return Text(value.toInt().toString(), style: const TextStyle(fontSize: 12));
                 }
@@ -266,7 +280,7 @@ class BarChartWidget extends StatelessWidget {
         ),
         gridData: FlGridData(
           show: true,
-          drawVerticalLine: false, // Only show horizontal grid lines
+          drawVerticalLine: false,
         ),
         borderData: FlBorderData(show: true),
         barTouchData: BarTouchData(enabled: false),

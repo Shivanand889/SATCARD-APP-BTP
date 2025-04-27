@@ -125,6 +125,10 @@ def TicketAnalytics(request) :
             resolution[key] = round(resolution[key]/resolutionCatergoryCount[key],1)
 
         print(resolution)
+        # resolution = {}
+        # resolvedCount= 0 
+        # openCount = 1
+        # ticketsOverTime = {}
         return Response({'resolution': resolution,'resolvedCount' : resolvedCount,'openCount':openCount, 'ticketsOverTime' : ticketsOverTime }, status=200, )
 
     except Exception as e:

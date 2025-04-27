@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
-// import 'package:app/components/header.dart';
 import 'package:app/components/my_files.dart';
 import 'package:app/components/recent_files.dart';
 import 'package:app/components/storage_details.dart';
@@ -17,12 +16,12 @@ class DashboardWidget extends StatefulWidget {
   final List<dynamic> activityData;
 
   const DashboardWidget({
-    super.key,
+    Key? key,
     this.farmData = const [],
     this.weatherData = const {},
     this.name = "",
     this.activityData = const [],
-  });
+  }) : super(key: key);
 
   @override
   _DashboardWidgetState createState() => _DashboardWidgetState();
@@ -30,6 +29,7 @@ class DashboardWidget extends StatefulWidget {
 
 class _DashboardWidgetState extends State<DashboardWidget> {
   List<List<String>> suggestions = [];
+  List<List<String>> workerNames = []; // Changed to List<List<String>>
   bool isLoading = true;
 
   @override
@@ -49,30 +49,33 @@ class _DashboardWidgetState extends State<DashboardWidget> {
 
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
+        print("API Response: $data"); // Debug print
+        
         setState(() {
           suggestions = List<List<String>>.from(
-            data['data'].map((item) => List<String>.from(item))
+            data['data']?.map((item) => List<String>.from(item)) ?? [],
           );
+          
+          // Simplified workerNames parsing
+          workerNames = List<List<String>>.from(
+            data['workerNames']?.map((worker) => List<String>.from(worker)) ?? [],
+          );
+          
           isLoading = false;
         });
+        
+        print("Parsed workerNames: $workerNames"); // Debug print
       } else {
         print('Failed to fetch suggestions: ${response.body}');
-        setState(() {
-          isLoading = false;
-        });
+        setState(() => isLoading = false);
       }
     } catch (e) {
       print('Error fetching suggestions: $e');
-      setState(() {
-        isLoading = false;
-      });
+      setState(() => isLoading = false);
     }
   }
 
   Widget suggestionBox() {
-   // Example list of people for assignment
-   final List<String> peopleList = ['John', 'Jane', 'Alice', 'Bob'];
-
     return Container(
       width: double.infinity,
       margin: EdgeInsets.only(top: defaultPadding),
@@ -100,14 +103,14 @@ class _DashboardWidgetState extends State<DashboardWidget> {
             ...List.generate(suggestions.length, (index) {
               return _SuggestedActivityTile(
                 activityName: suggestions[index][0],
-                peopleList: peopleList,
+                workerList: workerNames, // Pass the complete worker list
+                farmName: widget.name,
               );
             }),
         ],
       ),
     );
-  } 
-
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -124,13 +127,13 @@ class _DashboardWidgetState extends State<DashboardWidget> {
                 Expanded(
                   flex: 5,
                   child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.stretch, // Stretch children horizontally
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
                       MyFiles(fileData: widget.farmData, name: widget.name),
                       SizedBox(height: defaultPadding),
                       RecentFiles(activityData: widget.activityData, farmName: widget.name),
                       SizedBox(height: defaultPadding),
-                      suggestionBox(), // <-- Suggestion box
+                      suggestionBox(),
                       if (Responsive.isMobile(context)) SizedBox(height: defaultPadding),
                       if (Responsive.isMobile(context))
                         StorageDetails(weatherData: widget.weatherData),
@@ -152,16 +155,16 @@ class _DashboardWidgetState extends State<DashboardWidget> {
   }
 }
 
-
-
 class _SuggestedActivityTile extends StatefulWidget {
   final String activityName;
-  final List<String> peopleList;
+  final List<List<String>> workerList;
+  final String farmName;
 
   const _SuggestedActivityTile({
     Key? key,
     required this.activityName,
-    required this.peopleList,
+    required this.workerList,
+    required this.farmName,
   }) : super(key: key);
 
   @override
@@ -170,24 +173,48 @@ class _SuggestedActivityTile extends StatefulWidget {
 
 class _SuggestedActivityTileState extends State<_SuggestedActivityTile> {
   bool showDropdown = false;
-  String? selectedPerson;
+  List<String>? selectedWorker;
 
-  void assignActivity() {
-    if (selectedPerson != null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Assigned "${widget.activityName}" to $selectedPerson')),
-      );
-      setState(() {
-        showDropdown = false;
-        selectedPerson = null;
-      });
+  Future<void> assignActivity() async {
+    if (selectedWorker != null && selectedWorker!.length >= 2) {
+      final url = Uri.parse('http://127.0.0.1:8000/addTasks');
+
+      try {
+        final response = await http.post(
+          url,
+          body: {
+            'workerEmail': selectedWorker![1],
+            'activity': widget.activityName,
+            'farmName': widget.farmName,
+          },
+        );
+
+        if (response.statusCode == 200) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Assigned "${widget.activityName}" to ${selectedWorker![0]}')),
+          );
+          setState(() {
+            showDropdown = false;
+            selectedWorker = null;
+          });
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Failed to assign task: ${response.body}')),
+          );
+        }
+      } catch (e) {
+        print('Error assigning task: $e');
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error assigning task')),
+        );
+      }
     }
   }
 
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.only(bottom: 16.0), // <--- ADD THIS padding between tiles
+      padding: const EdgeInsets.only(bottom: 16.0),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -209,32 +236,38 @@ class _SuggestedActivityTileState extends State<_SuggestedActivityTile> {
                 style: ElevatedButton.styleFrom(
                   padding: EdgeInsets.symmetric(horizontal: 20, vertical: 10),
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-                  backgroundColor: Colors.purple[50], // matching your UI
-                  foregroundColor: Colors.deepPurple,  // text color
+                  backgroundColor: Colors.purple[50],
+                  foregroundColor: Colors.deepPurple,
                   elevation: 0,
                 ),
               ),
             ],
           ),
-          if (showDropdown)
+          if (showDropdown && widget.workerList.isNotEmpty)
             Padding(
               padding: const EdgeInsets.only(top: 8.0),
               child: Row(
                 children: [
                   Expanded(
-                    child: DropdownButton<String>(
+                    child: DropdownButton<List<String>>(
                       hint: Text("Select Person"),
-                      value: selectedPerson,
+                      value: selectedWorker,
                       isExpanded: true,
                       onChanged: (value) {
                         setState(() {
-                          selectedPerson = value;
+                          selectedWorker = value;
                         });
                       },
-                      items: widget.peopleList.map((person) {
-                        return DropdownMenuItem<String>(
-                          value: person,
-                          child: Text(person),
+                      items: widget.workerList.map((worker) {
+                        if (worker.length >= 2) {
+                          return DropdownMenuItem<List<String>>(
+                            value: worker,
+                            child: Text(worker[0]),
+                          );
+                        }
+                        return DropdownMenuItem<List<String>>(
+                          value: ['Invalid', ''],
+                          child: Text('Invalid worker data'),
                         );
                       }).toList(),
                     ),
@@ -247,10 +280,13 @@ class _SuggestedActivityTileState extends State<_SuggestedActivityTile> {
                 ],
               ),
             ),
+          if (showDropdown && widget.workerList.isEmpty)
+            Padding(
+              padding: const EdgeInsets.only(top: 8.0),
+              child: Text('No workers available for this activity'),
+            ),
         ],
       ),
     );
   }
-
 }
-

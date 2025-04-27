@@ -182,11 +182,10 @@ print("Formatted To Date: ${toDate != null ? DateFormat('yyyy-MM-dd').format(toD
                 DataColumn(label: Text("Activity Name")),
                 DataColumn(label: Text("Date")),
                 DataColumn(label: Text("Area")),
-                DataColumn(label: Text("Assign")), // New Column
               ],
               rows: List.generate(
                 filteredData.length,
-                (index) => recentFileDataRow(filteredData[index], assignActivity),
+                (index) => recentFileDataRow(filteredData[index]),
               ),
             ),
           ),
@@ -197,7 +196,7 @@ print("Formatted To Date: ${toDate != null ? DateFormat('yyyy-MM-dd').format(toD
 }
 
 // Updated function to add Assign button
-DataRow recentFileDataRow(dynamic activityData, Function(String) assignActivity) {
+DataRow recentFileDataRow(dynamic activityData) {
   final activityName = activityData['name'] ?? 'No name';
   final activityDate = activityData['date'] ?? 'No date';
   final area = activityData['area'] ?? 'No area';
@@ -207,16 +206,6 @@ DataRow recentFileDataRow(dynamic activityData, Function(String) assignActivity)
       DataCell(Text(activityName)),
       DataCell(Text(activityDate)),
       DataCell(Text(area)),
-      DataCell(
-        ElevatedButton(
-          onPressed: () => assignActivity(activityName),
-          style: ElevatedButton.styleFrom(
-            backgroundColor: Colors.blue, // Assign button color
-            padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-          ),
-          child: Text("Assign", style: TextStyle(color: Colors.white)),
-        ),
-      ),
     ],
   );
 }

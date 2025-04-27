@@ -296,7 +296,7 @@ def UpdateTasks(request):
         # Step 1: Get the email from the cache (session)
         # email = request.data.get('email')
         workerEmail = request.data.get('workerEmail')
-        if not email:
+        if not workerEmail:
             return Response({"error": "User is not logged in or session expired"}, status=401)
 
         farmName = request.data.get('name')
@@ -415,3 +415,38 @@ def TaskAnalytics(request):
     except Exception as e:
         print(f"Exception is: {e}")
         return Response({'message': "Error occurred while processing tickets"}, status=500)
+
+
+@api_view(['POST'])
+def GetTasks(request):
+    try:
+        workerEmail = request.data.get('workerEmail')
+        print(workerEmail)
+        if not workerEmail:
+            return Response({"error": "User is not logged in or session expired"}, status=401)
+
+        user = Users.objects.filter(email=workerEmail).first()
+        if not user:
+            return Response({"error": "User not found"}, status=404)
+
+        allTasks = Tasks.objects.filter(email=workerEmail)
+        
+        taskList = []
+        for task in allTasks:
+            # Format the date as ISO string for easy parsing in Flutter
+            taskList.append([
+                task.activityName,
+                task.farmName,
+                task.assignedDate.isoformat()  # Convert DateTime to ISO string
+            ])
+            
+        print("Sending tasks:", taskList)
+        # taskList = [["af",'afd',timezone.now()]]
+        return Response({
+            "message": "Tasks fetched successfully", 
+            "Tasks": taskList
+        }, status=200)
+       
+    except Exception as e:
+        print("Error in GetTasks:", str(e))
+        return Response({"error": str(e)}, status=500)

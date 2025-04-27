@@ -10,4 +10,5 @@ class Tickets(models.Model):
     email = models.ForeignKey(Users,on_delete=models.CASCADE,to_field='email', db_column='email')    
     status = models.TextField(null=False, default='Pending')
     closingDate = models.DateField(null=True, default=None)
+    closingMessage =models.TextField(null=False, default='')
     

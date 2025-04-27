@@ -3,7 +3,6 @@ import 'package:fl_chart/fl_chart.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:app/utils/global_state.dart';
-// Dummy global state class for demonstration
 
 class AnalyticsPage extends StatefulWidget {
   const AnalyticsPage({super.key});
@@ -27,7 +26,7 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
   }
 
   void sendPostRequest() async {
-    const url = 'http://127.0.0.1:8000/ticketAnalytics'; // Change to your backend URL
+    const url = 'http://127.0.0.1:8000/ticketAnalytics';
     try {
       final response = await http.post(
         Uri.parse(url),
@@ -44,8 +43,6 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
           ticketsOverTime = Map<String, dynamic>.from(data['ticketsOverTime']);
           isLoading = false;
         });
-
-        print("open ${openCount}");
       } else {
         print("POST failed with status: ${response.statusCode}");
       }
@@ -85,7 +82,6 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
   }
 }
 
-// Line Chart: Total Tickets Raised
 class LineChartWidget extends StatelessWidget {
   final Map<String, dynamic> ticketsOverTime;
 
@@ -97,7 +93,7 @@ class LineChartWidget extends StatelessWidget {
     final spots = sortedKeys.asMap().entries.map((entry) {
       int index = entry.key;
       String date = entry.value;
-      return FlSpot(index.toDouble(), ticketsOverTime[date].toDouble());
+      return FlSpot(index.toDouble(), (ticketsOverTime[date] as num).toDouble());
     }).toList();
 
     return LineChart(
@@ -147,7 +143,6 @@ class LineChartWidget extends StatelessWidget {
   }
 }
 
-// Pie Chart: Ticket Status Breakdown
 class PieChartWidget extends StatelessWidget {
   final int openCount;
   final int resolvedCount;
@@ -165,7 +160,7 @@ class PieChartWidget extends StatelessWidget {
       PieChartData(
         sections: statusData.map((data) {
           return PieChartSectionData(
-            value: data["count"]!.toDouble(),
+            value: (data["count"] as num).toDouble(),
             title: "${data["status"]}\n${data["count"]}",
             color: data["status"] == "Open" ? Colors.red : Colors.green,
             radius: 60,
@@ -176,38 +171,53 @@ class PieChartWidget extends StatelessWidget {
   }
 }
 
-extension on Object {
-  toDouble() {}
-}
-
-// Bar Chart: Average Resolution Time
 class BarChartWidget extends StatelessWidget {
   final Map<String, dynamic> resolution;
 
   const BarChartWidget({super.key, required this.resolution});
+
+  // Define colors for each category
+  final Map<String, Color> categoryColors = const {
+    'Irrigation': Colors.blue,
+    'Soil Health': Colors.green,
+    'Fertilizers': Colors.orange,
+    'Machinery': Colors.purple,
+  };
 
   @override
   Widget build(BuildContext context) {
     final categories = resolution.keys.toList();
     final barGroups = <BarChartGroupData>[];
 
-    for (int i = 0; i < categories.length; i++) {
-      final avgValues = resolution[categories[i]] as Map<String, dynamic>;
-      double avgTime = avgValues.values.fold(0.0, (sum, time) => sum + (time as num)) / avgValues.length;
+    // Find max value for Y-axis scaling
+    double maxY = resolution.values.reduce((a, b) => a > b ? a : b).toDouble();
+    maxY = maxY.ceilToDouble(); // Round up to nearest integer
 
-      barGroups.add(
-        BarChartGroupData(
-          x: i,
-          barRods: [
-            BarChartRodData(toY: avgTime.toDouble(), color: Colors.orange, width: 20),
-          ],
-        ),
-      );
+    for (int i = 0; i < categories.length; i++) {
+      final avgTime = resolution[categories[i]];
+      if (avgTime != null) {
+        final doubleValue = (avgTime as num).toDouble();
+        final color = categoryColors[categories[i]] ?? Colors.grey;
+        
+        barGroups.add(
+          BarChartGroupData(
+            x: i,
+            barRods: [
+              BarChartRodData(
+                toY: doubleValue,
+                color: color,
+                width: 20,
+              ),
+            ],
+          ),
+        );
+      }
     }
 
     return BarChart(
       BarChartData(
         barGroups: barGroups,
+        maxY: maxY, // Set max Y value based on data
         titlesData: FlTitlesData(
           bottomTitles: AxisTitles(
             axisNameWidget: const Padding(
@@ -219,27 +229,47 @@ class BarChartWidget extends StatelessWidget {
               reservedSize: 50,
               getTitlesWidget: (value, meta) {
                 int index = value.toInt();
-                return Transform.rotate(
-                  angle: -0.4,
-                  child: Padding(
-                    padding: const EdgeInsets.only(top: 8.0),
-                    child: Text(
-                      categories[index],
-                      textAlign: TextAlign.center,
-                      style: const TextStyle(fontSize: 12),
+                if (index >= 0 && index < categories.length) {
+                  return Transform.rotate(
+                    angle: -0.4,
+                    child: Padding(
+                      padding: const EdgeInsets.only(top: 8.0),
+                      child: Text(
+                        categories[index],
+                        textAlign: TextAlign.center,
+                        style: const TextStyle(fontSize: 12),
+                      ),
                     ),
-                  ),
-                );
+                  );
+                }
+                return const SizedBox();
               },
             ),
           ),
           leftTitles: AxisTitles(
-            axisNameWidget: const Text("Avg Resolution Time", style: TextStyle(fontWeight: FontWeight.bold)),
-            sideTitles: SideTitles(showTitles: true, reservedSize: 40),
+            axisNameWidget: const Text("Average Time (days)", style: TextStyle(fontWeight: FontWeight.bold)),
+            sideTitles: SideTitles(
+              showTitles: true,
+              reservedSize: 40,
+              interval: 1, // Show labels at 1 unit intervals
+              getTitlesWidget: (value, meta) {
+                // Show decimal places only if needed
+                if (value == value.toInt()) {
+                  return Text(value.toInt().toString(), style: const TextStyle(fontSize: 12));
+                }
+                return Text(value.toStringAsFixed(1), style: const TextStyle(fontSize: 12));
+              },
+            ),
           ),
+          rightTitles: AxisTitles(),
+          topTitles: AxisTitles(),
         ),
-        gridData: FlGridData(show: true),
+        gridData: FlGridData(
+          show: true,
+          drawVerticalLine: false, // Only show horizontal grid lines
+        ),
         borderData: FlBorderData(show: true),
+        barTouchData: BarTouchData(enabled: false),
       ),
     );
   }

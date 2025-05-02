@@ -34,7 +34,7 @@ urlpatterns = [
     path("farmList",FarmList, name = 'FarmList'),
     path("farmData",FarmData, name = 'FarmData'),
     path("add-activity",AddActivity, name = 'AddActivity'),
-    path("suggestions",Suggestions, name = 'Suggestions'),
+    path("suggestions",Suggestion, name = 'Suggestion'),
     path("raiseIssue",RaiseIssue, name = 'RaiseIssue'),
     path("downloadActivityDetails",DownloadActivityDetails, name = 'DownloadActivityDetails'),
     
@@ -44,6 +44,8 @@ urlpatterns = [
     path("getAllTickets",GetAllTickets, name = 'GetAllTickets'),
     path("updateTickets",UpdateTickets, name = 'UpdateTickets'),
     path("addTasks",AddTasks, name = 'AddTasks'),
+    path("updateTasks",UpdateTasks, name = 'UpdateTasks'),
+    path("customizedReports",CustomizedReports, name = 'CustomizedReports'),
     # path("", include('googleauthentication.urls')),
     # path('accounts/', google_login_redirect, name='google_login'),
     path("accounts/", include("allauth.urls")),

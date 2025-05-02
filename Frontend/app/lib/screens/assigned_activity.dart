@@ -57,11 +57,9 @@ class _WorkerActivityPageState extends State<WorkerActivityPage> {
         final List tasks = data['Tasks'];
 
         setState(() {
-          activities = tasks.asMap().entries.map((entry) {
-            int idx = entry.key;
-            var task = entry.value; // [activityName, farmName, assignedDate]
+          activities = tasks.map((task) {
             return Activity(
-              id: 'task$idx',
+              id: task[3], // Corrected: fetch id from 4th entry
               activityName: task[0],
               farmName: task[1],
               assignedDate: DateTime.parse(task[2]),
@@ -76,11 +74,44 @@ class _WorkerActivityPageState extends State<WorkerActivityPage> {
     }
   }
 
-  void completeActivity(Activity activity) {
+  Future<void> completeActivity(Activity activity) async {
     setState(() {
       activity.isCompleted = true;
       activity.workerMessage = messageControllers[activity.id]?.text ?? '';
     });
+
+    try {
+      final url = Uri.parse('http://127.0.0.1:8000/updateTasks');
+      final response = await http.post(
+        url,
+        headers: {"Content-Type": "application/json"},
+        body: json.encode({
+          'workerEmail': workerEmail,
+          'activityId': activity.id, // Use correct id
+          'name' : activity.farmName, 
+        }),
+      );
+
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
+        final List tasks = data['Tasks'];
+
+        setState(() {
+          activities = tasks.map((task) {
+            return Activity(
+              id: task[3], // Corrected: fetch id from 4th entry
+              activityName: task[0],
+              farmName: task[1],
+              assignedDate: DateTime.parse(task[2]),
+            );
+          }).toList();
+        });
+      } else {
+        print('Failed to update tasks: ${response.body}');
+      }
+    } catch (e) {
+      print('Error updating tasks: $e');
+    }
   }
 
   @override

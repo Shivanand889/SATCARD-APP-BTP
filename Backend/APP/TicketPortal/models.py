@@ -11,4 +11,6 @@ class Tickets(models.Model):
     status = models.TextField(null=False, default='Pending')
     closingDate = models.DateField(null=True, default=None)
     closingMessage =models.TextField(null=False, default='')
+    image_data = models.BinaryField(null=True, blank=True,default = None)  # Store raw binary data
+    image = models.ImageField(upload_to='ticket_images/', null=True, blank=True,default = None)
     

@@ -16,6 +16,8 @@ import torch
 import torch.nn as nn
 import torch.optim as optim
 from django.utils import timezone
+from datetime import date, timedelta, datetime
+
 
 class LSTMModel(nn.Module):
     def __init__(self, input_dim, hidden_dim, output_dim, num_layers, dropout_prob=0.5):
@@ -66,7 +68,6 @@ def AddActivity(request):
 
         farmName = request.data.get('name')
         activities = request.data.get('activities')  # Ensure this is a list
-        date = request.data.get('date')
 
         # Step 2: Verify that the user is valid
         user = Users.objects.filter(email=email).first()
@@ -76,11 +77,11 @@ def AddActivity(request):
         # Step 3: Create an Activity for each item in the activities list
         if activities and isinstance(activities, list):  # Check if activities is a list
             for activity_name in activities:
-                Activity.objects.create(
-                    farmName=farmName,
-                    email=user,
-                    activityName=activity_name,
-                    date=date if date else timezone.now()  # Use provided date or current date if not provided
+                Suggestions.objects.create(
+                    farmName = farmName,
+                    assignedDate = timezone.now(),
+                    activityName = activity_name,
+                    email = user
                 )
             return Response({"message": "Activities added successfully"}, status=200)
         else:
@@ -92,7 +93,7 @@ def AddActivity(request):
 
 
 @api_view(['POST'])
-def Suggestions(request):
+def Suggestion(request):
     features = ['GDD', 'Soil Type', 'Rainfall', 'Land Area','humidity', 'Wind speed']
     activities = {'Sowing' :6, 'Spray':7, 'Irrigation':8, 'Scouting':9, 'Plowing':10, 'Fertilizing':11, 
               'Pruning':12, 'Transplantation':13, 'Mulching':14, 'Harvesting':15, 'Weeding':16}
@@ -118,18 +119,26 @@ def Suggestions(request):
         suggest =[]
         workerNames = []
         for i in workers : 
-            task = Tasks.objects.filter(
+           
+            workerNames.append([i.name, i.email])
+        
+        print(1)
+        # try :
+        suggestion  = Suggestions.objects.filter(
                 farmName=farmName,
                 assignedDate=timezone.now(),
-                email = i
+                email = user
             )
-            workerNames.append([i.name, i.email])
-            for j in task :
-                suggest.append([j.activityName, j.status])
         
+        # except Exception as e :
+        #     print(e)
+        print(2)
+        for i in suggestion :
+            suggest.append([i.activityName,i.status])
+        print(suggest)
         print(workerNames)
         if(len(suggest) !=0) : 
-            return Response({"data": work, 'workerNames' : workerNames}, status=200)
+            return Response({"data": suggest, 'workerNames' : workerNames}, status=200)
         # print(2)
         try :
             farm = Farms.objects.filter(email=user, name=farmName).first()
@@ -168,11 +177,35 @@ def Suggestions(request):
         
         print(len(last_4_dates))
         if len(last_4_dates)==0 :
+            newSuggestion = Suggestions.objects.create(
+                                farmName = farmName,
+                                assignedDate = timezone.now(),
+                                activityName = 'ploughing',
+                                email = user
+            )
+            newSuggestion = Suggestions.objects.create(
+                                farmName = farmName,
+                                assignedDate = timezone.now(),
+                                activityName = 'mulching',
+                                email = user
+            )
             return Response({"data": [['ploughing','Pending'],['mulching','Pending']], 'workerNames' : workerNames}, status=200)
         if len(last_4_dates)==1 :
+            newSuggestion = Suggestions.objects.create(
+                                farmName = farmName,
+                                assignedDate = timezone.now(),
+                                activityName = 'sowing',
+                                email = user
+            )
             return Response({"data": [['sowing','Pending']], 'workerNames' : workerNames}, status=200)
 
         if len(last_4_dates)<4 :
+            newSuggestion = Suggestions.objects.create(
+                                farmName = farmName,
+                                assignedDate = timezone.now(),
+                                activityName = 'irrigation',
+                                email = user
+            )
             return Response({"data": [['irrigation','Pending']], 'workerNames' : workerNames}, status=200)
 
         l_date = []
@@ -250,6 +283,13 @@ def Suggestions(request):
             if prediction[0][i] >= 0.4:
                 work.append([activityList[i], "Pending"])
 
+        for i in work :
+            newSuggestion = Suggestions.objects.create(
+                                farmName = farmName,
+                                assignedDate = timezone.now(),
+                                activityName = i[0],
+                                email = user
+            )
         print(work)
         # except Exception as e:
         #     print(e)
@@ -265,7 +305,9 @@ def AddTasks(request):
         # Step 1: Get the email from the cache (session)
         # email = request.data.get('email')
         workerEmail = request.data.get('workerEmail')
+        email = request.data.get('email')
         print(workerEmail)
+        user1 = Users.objects.filter(email=email).first()
         if not workerEmail:
             return Response({"error": "User is not logged in or session expired"}, status=401)
 
@@ -286,7 +328,28 @@ def AddTasks(request):
             activityName=activity,
             
         )
-        return Response({"message": "Task added successfully"}, status=200)
+
+        suggest  = Suggestions.objects.filter(
+            farmName=farmName,
+            email=user1,
+            assignedDate=timezone.now(),
+            activityName=activity,
+        )
+
+        for i in suggest :
+            i.status = "Assigned"
+            i.save()
+
+        work = []
+        suggest  = Suggestions.objects.filter(
+            farmName=farmName,
+            email=user1,
+            assignedDate=timezone.now(),
+            
+        )
+        for i in suggest :
+            work.append([i.activityName,i.status])
+        return Response({"message": "Task added successfully", "data" : work}, status=200)
        
     except Exception as e:
         return Response({"error": str(e)}, status=500)
@@ -301,14 +364,22 @@ def UpdateTasks(request):
         if not workerEmail:
             return Response({"error": "User is not logged in or session expired"}, status=401)
 
+        id = int(request.data.get('activityId'))
         farmName = request.data.get('name')
-        activity = request.data.get('activity')  # Ensure this is a list
-        dateAssigned = request.data.get('date')
+        # activity = request.data.get('activity')  # Ensure this is a list
+        # dateAssigned = request.data.get('date')
         # Step 2: Verify that the user is valid
         user = Users.objects.filter(email=workerEmail).first()
+        user1 = Users.objects.filter(email=user.managerEmail).first()
+        try :
+            farm = Farms.objects.filter(email=user1, name=farmName).first()
+        except Exception as e:
+            print(e)
+        print(1)
+        
         if not user:
             return Response({"error": "User not found"}, status=404)
-
+        print(2)
         headers = {"accept": "application/json"}
         url = f"https://api.tomorrow.io/v4/weather/forecast?location={farm.location}&apikey=OMbq1FMmdpBv8I2bjdzFEA8zeXMCIPUT"
         print(url)
@@ -340,19 +411,28 @@ def UpdateTasks(request):
             print(e)
        
         task = Tasks.objects.get(
-            farmName=farmName,
-            email=user,
-            activityName=activity,
-            assignedDate=dateAssigned
+            id = id
         )
         task.completionDate = timezone.now()
         task.gdd = weather_data["temperature"]
         task.rain = weather_data["rain"]
         task.humidity = weather_data["humidity"]
         task.wind = weather_data["wind"]
-
+        task.status = "Completed"
         task.save()
-        return Response({"message": "Task updated successfully"}, status=200)
+
+        allTasks = Tasks.objects.filter(email=workerEmail, status = "Pending")
+        
+        taskList = []
+        for task in allTasks:
+            # Format the date as ISO string for easy parsing in Flutter
+            taskList.append([
+                task.activityName,
+                task.farmName,
+                task.assignedDate.isoformat() , # Convert DateTime to ISO string
+                str(task.id)
+            ])
+        return Response({"message": "Task updated successfully","Tasks" : taskList}, status=200)
        
     except Exception as e:
         return Response({"error": str(e)}, status=500)
@@ -431,7 +511,7 @@ def GetTasks(request):
         if not user:
             return Response({"error": "User not found"}, status=404)
 
-        allTasks = Tasks.objects.filter(email=workerEmail)
+        allTasks = Tasks.objects.filter(email=workerEmail, status = "Pending")
         
         taskList = []
         for task in allTasks:
@@ -439,7 +519,8 @@ def GetTasks(request):
             taskList.append([
                 task.activityName,
                 task.farmName,
-                task.assignedDate.isoformat()  # Convert DateTime to ISO string
+                task.assignedDate.isoformat() , # Convert DateTime to ISO string
+                str(task.id)
             ])
             
         print("Sending tasks:", taskList)
@@ -452,3 +533,87 @@ def GetTasks(request):
     except Exception as e:
         print("Error in GetTasks:", str(e))
         return Response({"error": str(e)}, status=500)
+
+
+@api_view(['POST'])
+def CustomizedReports(request):
+    try:
+        fromDate = request.data.get('fromDate')
+        toDate = request.data.get('toDate')
+        fromDate = datetime.strptime(fromDate, '%Y-%m-%d')
+        toDate = datetime.strptime(toDate, '%Y-%m-%d')
+        email = request.data.get('email')
+        farm = request.data.get('farm')
+        dataType = request.data.get('dataType')
+        fromDate = timezone.make_aware(fromDate)
+        toDate = timezone.make_aware(toDate)
+        user = Users.objects.filter(email=email).first()
+        Farm = Farms.objects.filter(name = farm, email = user).first()
+        if(dataType == "Weather Data"):
+            headers = {"accept": "application/json"}
+            url = f"https://api.tomorrow.io/v4/weather/forecast?location={Farm.location}&apikey=OMbq1FMmdpBv8I2bjdzFEA8zeXMCIPUT"
+            print(url)
+            weather_data = {'rain' : 0,
+                'wind' : 0,
+                'temperature' : 0,
+                'precipitation' : 0,
+                'humidity' : 0
+                }
+            try :
+                response = requests.get(url, headers=headers)
+                print(4)
+                # Convert the response text into a dictionary
+                response_dict = json.loads(response.text)
+
+                # Print the dictionary
+                print(5)
+                try :
+                    
+                    print(len(response_dict['timelines']['daily']))
+                    print("wef")
+                except Exception as e :
+                    print(e)
+                weather_data = []
+                day  = date.today()
+                for i in range(len(response_dict['timelines']['daily'])):
+                    weather_data.append({
+                        'date': day ,
+                        'rain' : response_dict['timelines']['daily'][i]['values']['rainAccumulationAvg'],
+                        'wind' : response_dict['timelines']['daily'][i]['values']['windSpeedAvg'],
+                        'temperature' : response_dict['timelines']['daily'][i]['values']['temperatureApparentAvg'],
+                        'precipitation' : response_dict['timelines']['daily'][i]['values']['precipitationProbabilityAvg'],
+                        'humidity' : response_dict['timelines']['daily'][i]['values']['humidityAvg']
+                    })
+                    day = day + timedelta(days = 1)
+                
+                return Response({ "data": weather_data}, status=200)
+            except Exception as e:
+                return Response({ "message": "unsuccesfull", "data" : []}, status=500)
+                print(e)
+
+        workers = Users.objects.filter(managerEmail=email)
+        
+        activities = []
+        for worker in workers :
+
+            allTasks = Tasks.objects.filter(
+                email=worker,
+                farmName=farm,
+                assignedDate__gte=fromDate,
+                assignedDate__lte=toDate
+            )
+
+            for task in allTasks :
+                activities.append({
+                    "name" : worker.name,
+                    "activity" : task.activityName,
+                    "farm" : task.farmName,
+                    "date assigned": task.assignedDate.isoformat() , # Convert DateTime to ISO string
+                    "status" : task.status
+                })
+        
+        return Response({"data": activities }, status=200)
+       
+    except Exception as e:
+        print("Error in GetTasks:", str(e))
+        return Response({ "message": "unsuccesfull", "data" : []}, status=500)

@@ -3,8 +3,10 @@ import 'package:image_picker/image_picker.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'dart:io';
-import 'package:app/const/constant.dart'; // Importing constants
+import 'dart:typed_data';
+import 'package:app/const/constant.dart';
 import 'package:app/utils/global_state.dart';
+
 class TicketPortalApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
@@ -17,8 +19,17 @@ class Ticket {
   String category;
   String status;
   String? imageUrl;
+  String? closingDate;
+  String? message;
 
-  Ticket({required this.issue, required this.category, this.status = "Pending", this.imageUrl});
+  Ticket({
+    required this.issue,
+    required this.category,
+    this.status = "Pending",
+    this.imageUrl,
+    this.closingDate,
+    this.message,
+  });
 
   factory Ticket.fromJson(Map<String, dynamic> json) {
     return Ticket(
@@ -26,6 +37,8 @@ class Ticket {
       category: json['category'] ?? '',
       status: json['status'] ?? 'Pending',
       imageUrl: json['imageUrl'],
+      closingDate: json['closingDate'],
+      message: json['message'],
     );
   }
 }
@@ -40,6 +53,7 @@ class _TicketPortalScreenState extends State<TicketPortalScreen> {
   final TextEditingController _issueController = TextEditingController();
   String? _selectedCategory;
   File? _selectedImage;
+  Uint8List? _selectedImageBytes;
   List<Ticket> tickets = [];
   bool isLoading = true;
 
@@ -78,8 +92,10 @@ class _TicketPortalScreenState extends State<TicketPortalScreen> {
     final XFile? pickedImage = await _picker.pickImage(source: ImageSource.gallery);
 
     if (pickedImage != null) {
+      final bytes = await pickedImage.readAsBytes();
       setState(() {
         _selectedImage = File(pickedImage.path);
+        _selectedImageBytes = bytes;
       });
     }
   }
@@ -96,22 +112,29 @@ class _TicketPortalScreenState extends State<TicketPortalScreen> {
         request.fields['category'] = _selectedCategory!;
         request.fields['email'] = GlobalState().email;
 
-
-        if (_selectedImage != null) {
-          request.files.add(await http.MultipartFile.fromPath('image', _selectedImage!.path));
+        if (_selectedImage != null && _selectedImageBytes != null) {
+          request.files.add(http.MultipartFile.fromBytes(
+            'image',
+            _selectedImageBytes!,
+            filename: 'ticket_image.jpg',
+          ));
         }
 
         final response = await request.send();
         final responseBody = await response.stream.bytesToString();
 
         if (response.statusCode == 200) {
+          final Map<String, dynamic> jsonData = json.decode(responseBody);
+          print("Ticket added: $jsonData");
+
           _issueController.clear();
           setState(() {
             _selectedCategory = null;
             _selectedImage = null;
+            _selectedImageBytes = null;
           });
 
-          fetchTickets();
+          fetchTickets(); // refresh the ticket list
         } else {
           print("Failed to raise issue: $responseBody");
         }
@@ -122,53 +145,60 @@ class _TicketPortalScreenState extends State<TicketPortalScreen> {
   }
 
   void _showTicketDetails(BuildContext context, Ticket ticket) {
-  showDialog(
-    context: context,
-    builder: (BuildContext context) {
-      return AlertDialog(
-        backgroundColor: cardBackgroundColor,
-        title: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween, // Keeps title & status separate
-          children: [
-            Text("Ticket Details", style: TextStyle(color: secondaryColor)),
-            Container(
-              padding: EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-              decoration: BoxDecoration(
-                color: ticket.status == "Pending" ? Colors.orange : Colors.green,
-                borderRadius: BorderRadius.circular(8),
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          backgroundColor: cardBackgroundColor,
+          title: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text("Ticket Details", style: TextStyle(color: secondaryColor)),
+              Container(
+                padding: EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                decoration: BoxDecoration(
+                  color: ticket.status == "Pending" ? Colors.orange : Colors.green,
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Text(
+                  ticket.status,
+                  style: TextStyle(color: Colors.white, fontSize: 10),
+                ),
               ),
-              child: Text(
-                ticket.status,
-                style: TextStyle(color: Colors.white, fontSize: 10),
-              ),
+            ],
+          ),
+          content: SingleChildScrollView(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text("Issue: ${ticket.issue}", style: TextStyle(color: secondaryColor)),
+                SizedBox(height: 8),
+                Text("Category: ${ticket.category}", style: TextStyle(color: selectionColor)),
+                SizedBox(height: 8),
+                Text("Image:", style: TextStyle(color: selectionColor)),
+                SizedBox(height: 8),
+                if (ticket.imageUrl != null)
+                  Image.network(ticket.imageUrl!, height: 150, width: 150, fit: BoxFit.cover),
+                if (ticket.status == "Completed") ...[
+                  SizedBox(height: 12),
+                  Text("Closing Date: ${ticket.closingDate ?? 'N/A'}", style: TextStyle(color: secondaryColor)),
+                  SizedBox(height: 8),
+                  Text("Closing Message:", style: TextStyle(color: selectionColor)),
+                  Text(ticket.message ?? 'No message', style: TextStyle(color: secondaryColor)),
+                ],
+              ],
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: Text("Close", style: TextStyle(color: Color.fromARGB(255, 184, 187, 199))),
             ),
           ],
-        ),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text("Issue: ${ticket.issue}", style: TextStyle(color: secondaryColor)),
-            SizedBox(height: 8),
-            Text("Category: ${ticket.category}", style: TextStyle(color: selectionColor)),
-            SizedBox(height: 8),
-            Text("Image:", style: TextStyle(color: selectionColor)),
-            SizedBox(height: 8),
-            if (ticket.imageUrl != null)
-              Image.network(ticket.imageUrl!, height: 150, width: 150, fit: BoxFit.cover),
-          ],
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: Text("Close", style: TextStyle(color: Color.fromARGB(255, 184, 187, 199))),
-          ),
-        ],
-      );
-    },
-  );
-}
-
+        );
+      },
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -222,21 +252,20 @@ class _TicketPortalScreenState extends State<TicketPortalScreen> {
                     style: ElevatedButton.styleFrom(backgroundColor: primaryColor),
                     child: Text("Upload Photo", style: TextStyle(color: secondaryColor2)),
                   ),
-                  if (_selectedImage != null)
+                  if (_selectedImageBytes != null)
                     Padding(
                       padding: const EdgeInsets.only(top: 10),
-                      child: Image.file(_selectedImage!, height: 100, width: 100),
+                      child: Image.memory(_selectedImageBytes!, height: 100, width: 100),
                     ),
                   SizedBox(height: defaultPadding),
                   ElevatedButton(
                     onPressed: addTicket,
                     style: ElevatedButton.styleFrom(backgroundColor: primaryColor),
                     child: Text("Submit Ticket", style: TextStyle(color: secondaryColor2)),
-                    
                   ),
                   SizedBox(height: defaultPadding),
                   Text("Raised Tickets", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: secondaryColor)),
-                    SizedBox(height: defaultPadding),
+                  SizedBox(height: defaultPadding),
                 ],
               ),
             ),

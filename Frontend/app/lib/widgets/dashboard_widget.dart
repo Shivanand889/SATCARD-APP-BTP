@@ -29,7 +29,7 @@ class DashboardWidget extends StatefulWidget {
 
 class _DashboardWidgetState extends State<DashboardWidget> {
   List<List<String>> suggestions = [];
-  List<List<String>> workerNames = []; // Changed to List<List<String>>
+  List<List<String>> workerNames = [];
   bool isLoading = true;
 
   @override
@@ -49,14 +49,13 @@ class _DashboardWidgetState extends State<DashboardWidget> {
 
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
-        print("API Response: $data"); // Debug print
+        print("API Response: $data");
         
         setState(() {
           suggestions = List<List<String>>.from(
             data['data']?.map((item) => List<String>.from(item)) ?? [],
           );
           
-          // Simplified workerNames parsing
           workerNames = List<List<String>>.from(
             data['workerNames']?.map((worker) => List<String>.from(worker)) ?? [],
           );
@@ -64,7 +63,7 @@ class _DashboardWidgetState extends State<DashboardWidget> {
           isLoading = false;
         });
         
-        print("Parsed workerNames: $workerNames"); // Debug print
+        print("Parsed workerNames: $workerNames");
       } else {
         print('Failed to fetch suggestions: ${response.body}');
         setState(() => isLoading = false);
@@ -74,6 +73,21 @@ class _DashboardWidgetState extends State<DashboardWidget> {
       setState(() => isLoading = false);
     }
   }
+
+  void updateSuggestionsFromResponse(Map<String, dynamic> data) {
+  setState(() {
+    suggestions = List<List<String>>.from(
+      data['data']?.map((item) => List<String>.from(item)) ?? [],
+    );
+
+    if (data.containsKey('workerNames') && data['workerNames'] != null) {
+      workerNames = List<List<String>>.from(
+        data['workerNames'].map((worker) => List<String>.from(worker)),
+      );
+    }
+  });
+}
+
 
   Widget suggestionBox() {
     return Container(
@@ -103,8 +117,10 @@ class _DashboardWidgetState extends State<DashboardWidget> {
             ...List.generate(suggestions.length, (index) {
               return _SuggestedActivityTile(
                 activityName: suggestions[index][0],
-                workerList: workerNames, // Pass the complete worker list
+                status: suggestions[index][1],
+                workerList: workerNames,
                 farmName: widget.name,
+                onSuggestionsUpdated: updateSuggestionsFromResponse,
               );
             }),
         ],
@@ -131,7 +147,7 @@ class _DashboardWidgetState extends State<DashboardWidget> {
                     children: [
                       MyFiles(fileData: widget.farmData, name: widget.name),
                       SizedBox(height: defaultPadding),
-                      RecentFiles(activityData: widget.activityData, farmName: widget.name),
+                      // RecentFiles(activityData: widget.activityData, farmName: widget.name),
                       SizedBox(height: defaultPadding),
                       suggestionBox(),
                       if (Responsive.isMobile(context)) SizedBox(height: defaultPadding),
@@ -157,14 +173,18 @@ class _DashboardWidgetState extends State<DashboardWidget> {
 
 class _SuggestedActivityTile extends StatefulWidget {
   final String activityName;
+  final String status;
   final List<List<String>> workerList;
   final String farmName;
+  final Function(Map<String, dynamic>) onSuggestionsUpdated;
 
   const _SuggestedActivityTile({
     Key? key,
     required this.activityName,
+    required this.status,
     required this.workerList,
     required this.farmName,
+    required this.onSuggestionsUpdated,
   }) : super(key: key);
 
   @override
@@ -186,13 +206,18 @@ class _SuggestedActivityTileState extends State<_SuggestedActivityTile> {
             'workerEmail': selectedWorker![1],
             'activity': widget.activityName,
             'farmName': widget.farmName,
+            'email': GlobalState().email,
           },
         );
 
         if (response.statusCode == 200) {
+          final data = json.decode(response.body);
+          widget.onSuggestionsUpdated(data);  // Update the suggestions from the new response
+
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(content: Text('Assigned "${widget.activityName}" to ${selectedWorker![0]}')),
           );
+          
           setState(() {
             showDropdown = false;
             selectedWorker = null;
@@ -226,21 +251,29 @@ class _SuggestedActivityTileState extends State<_SuggestedActivityTile> {
                   style: TextStyle(fontSize: 14),
                 ),
               ),
-              ElevatedButton(
-                onPressed: () {
-                  setState(() {
-                    showDropdown = !showDropdown;
-                  });
-                },
-                child: Text('Assign'),
-                style: ElevatedButton.styleFrom(
-                  padding: EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-                  backgroundColor: Colors.purple[50],
-                  foregroundColor: Colors.deepPurple,
-                  elevation: 0,
-                ),
-              ),
+              widget.status == "Assigned"
+                  ? Text(
+                      "Assigned",
+                      style: TextStyle(
+                        color: Colors.green,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    )
+                  : ElevatedButton(
+                      onPressed: () {
+                        setState(() {
+                          showDropdown = !showDropdown;
+                        });
+                      },
+                      child: Text('Assign'),
+                      style: ElevatedButton.styleFrom(
+                        padding: EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+                        backgroundColor: Colors.purple[50],
+                        foregroundColor: Colors.deepPurple,
+                        elevation: 0,
+                      ),
+                    ),
             ],
           ),
           if (showDropdown && widget.workerList.isNotEmpty)

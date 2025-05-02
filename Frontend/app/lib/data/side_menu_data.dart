@@ -4,16 +4,17 @@ import 'package:app/utils/global_state.dart';
 class SideMenuData {
   // final IsManager =  ;
   final menu = <MenuModel>[
-    MenuModel(icon: Icons.home, title: 'Dashboard'),
+    // if (GlobalState().isManager == 1)
+      MenuModel(icon: Icons.home, title: 'Dashboard'),
     if (GlobalState().isManager == 1)
       MenuModel(icon: Icons.add, title: 'Add Farm'),
-    
-    MenuModel(
-      icon: Icons.home,
-      title: 'Farms',
-      submenus: [MenuModel(icon: Icons.agriculture, title: 'Farm 4'),
-        MenuModel(icon: Icons.agriculture, title: 'Farm 1'),], // Initially empty, can be updated dynamically
-    ),
+    if (GlobalState().isManager == 1)
+      MenuModel(
+        icon: Icons.home,
+        title: 'Farms',
+        submenus: [MenuModel(icon: Icons.agriculture, title: 'Farm 4'),
+          MenuModel(icon: Icons.agriculture, title: 'Farm 1'),], // Initially empty, can be updated dynamically
+      ),
     if (GlobalState().isManager == 0)
       MenuModel(icon: Icons.support, title: 'Assigned Activity'),
     if (GlobalState().isManager == 0)
@@ -25,7 +26,9 @@ class SideMenuData {
       MenuModel(icon: Icons.support, title: 'Customized Report'),
     if (GlobalState().isManager == 1)
       MenuModel(icon: Icons.support, title: 'Analytics'),
-    MenuModel(icon: Icons.support, title: 'Workers Analytics'),
+
+    if (GlobalState().isManager == 1)
+      MenuModel(icon: Icons.support, title: 'Workers Analytics'),
     MenuModel(icon: Icons.logout, title: 'SignOut'),
   ];
 

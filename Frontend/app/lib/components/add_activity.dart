@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart'; // Import intl package for date formatting
 import 'package:http/http.dart' as http; // Import http package for API requests
 import 'dart:convert'; // Import for JSON encoding
 import 'package:app/utils/global_state.dart';
@@ -8,7 +7,7 @@ void showAddActivityDialog(BuildContext context, String name) {
   showDialog(
     context: context,
     builder: (context) {
-      return AddActivityForm(name:name); // Use the stateful form widget
+      return AddActivityForm(name: name); // Use the stateful form widget
     },
   );
 }
@@ -22,10 +21,8 @@ class AddActivityForm extends StatefulWidget {
 
 class _AddActivityFormState extends State<AddActivityForm> {
   final _formKey = GlobalKey<FormState>();
-  DateTime selectedDate = DateTime.now();
-  TextEditingController _dateController = TextEditingController();
 
-  // Activity options (you can add more activities here)
+  // Activity options
   List<String> activityOptions = [
     'Plowing',
     'Sowing',
@@ -43,18 +40,14 @@ class _AddActivityFormState extends State<AddActivityForm> {
   // List to track selected activities
   late List<bool> selectedActivities;
 
-  String landArea = '';
-
   @override
   void initState() {
     super.initState();
-    selectedActivities = List.generate(activityOptions.length, (index) => false); // Initialize list based on activity options
-    _dateController.text = DateFormat('yyyy-MM-dd').format(selectedDate); // Format date
+    selectedActivities = List.generate(activityOptions.length, (index) => false);
   }
 
   // Method to send data to the backend
   Future<void> sendDataToBackend() async {
-    // Collect selected activities
     List<String> selectedActivityNames = selectedActivities
         .asMap()
         .entries
@@ -62,19 +55,15 @@ class _AddActivityFormState extends State<AddActivityForm> {
         .map((entry) => activityOptions[entry.key])
         .toList();
 
-    // Create the payload
     final Map<String, dynamic> payload = {
       'activities': selectedActivityNames,
-      'date': _dateController.text,
       'name': widget.name,
-      'email' : GlobalState().email,
+      'email': GlobalState().email,
     };
 
-    // Define the backend endpoint
     const String url = 'http://127.0.0.1:8000/add-activity';
 
     try {
-      // Send the POST request
       final response = await http.post(
         Uri.parse(url),
         headers: {'Content-Type': 'application/json'},
@@ -82,20 +71,17 @@ class _AddActivityFormState extends State<AddActivityForm> {
       );
 
       if (response.statusCode == 200) {
-        // Success: Parse the response or show a success message
         print('Activity added successfully: ${response.body}');
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Activity added successfully!')),
         );
       } else {
-        // Handle error
         print('Failed to add activity: ${response.body}');
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Failed to add activity: ${response.reasonPhrase}')),
         );
       }
     } catch (e) {
-      // Handle exception
       print('Error: $e');
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('An error occurred: $e')),
@@ -116,7 +102,7 @@ class _AddActivityFormState extends State<AddActivityForm> {
               Text('Select Activities'),
               activityOptions.length > 5
                   ? Container(
-                      height: 200, // Limit height, scrollable after 5 activities
+                      height: 200,
                       child: SingleChildScrollView(
                         scrollDirection: Axis.vertical,
                         child: Column(
@@ -126,7 +112,7 @@ class _AddActivityFormState extends State<AddActivityForm> {
                               value: selectedActivities[index],
                               onChanged: (bool? value) {
                                 setState(() {
-                                  selectedActivities[index] = value ?? false; // Update selected state
+                                  selectedActivities[index] = value ?? false;
                                 });
                               },
                             );
@@ -141,51 +127,12 @@ class _AddActivityFormState extends State<AddActivityForm> {
                           value: selectedActivities[index],
                           onChanged: (bool? value) {
                             setState(() {
-                              selectedActivities[index] = value ?? false; // Update selected state
+                              selectedActivities[index] = value ?? false;
                             });
                           },
                         );
                       }),
                     ),
-              SizedBox(height: 10),
-              TextFormField(
-                controller: _dateController,
-                readOnly: true,
-                decoration: InputDecoration(
-                  labelText: 'Select Date',
-                  suffixIcon: Icon(Icons.calendar_today),
-                ),
-                onTap: () async {
-                  DateTime? pickedDate = await showDatePicker(
-                    context: context,
-                    initialDate: selectedDate,
-                    firstDate: DateTime(2000),
-                    lastDate: DateTime(2100),
-                  );
-                  if (pickedDate != null) {
-                    setState(() {
-                      selectedDate = pickedDate;
-                      _dateController.text = DateFormat('yyyy-MM-dd').format(selectedDate); // Format date to show only date
-                    });
-                  }
-                },
-              ),
-                SizedBox(height: 20),
-                TextFormField(
-                // controller: _quantityController,
-                keyboardType: TextInputType.number, // Ensure numeric input
-                decoration: InputDecoration(
-                  labelText: 'Enter Area/Quantity',
-                  hintText: 'e.g., 10 acres or 50 units',
-                  // border: OutlineInputBorder(),
-                ),
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return 'Please enter area or quantity';
-                  }
-                  return null;
-                },
-              ),
             ],
           ),
         ),
@@ -199,8 +146,8 @@ class _AddActivityFormState extends State<AddActivityForm> {
           child: Text('Add'),
           onPressed: () {
             if (_formKey.currentState!.validate()) {
-              sendDataToBackend(); // Call the method to send data to the backend
-              Navigator.of(context).pop(); // Close the dialog
+              sendDataToBackend();
+              Navigator.of(context).pop();
             }
           },
         ),

@@ -4,7 +4,7 @@ import 'package:app/widgets/dashboard_widget.dart';
 // import 'package:app/widgets/add_farm.dart';
 import 'package:app/widgets/main_dashboard.dart';
 import 'package:app/const/constant.dart';
-
+import 'package:app/utils/global_state.dart' ;
 class Dashboard extends StatefulWidget {
   const Dashboard({super.key});
 

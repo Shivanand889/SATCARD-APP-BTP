@@ -65,6 +65,9 @@ class _LoginScreenState extends State<LoginScreen> {
         // if (GlobalState().isManager == 1) {
           Navigator.pushNamed(context, '/dashboard');
         // }
+        // else{
+        //   Navigator.pushNamed(context, '/assignedActivity');
+        // }
       } else {
         _logger.warning('Login failed: ${responseBody['message'] ?? 'Unknown error'}');
         setState(() {
@@ -118,7 +121,12 @@ class _LoginScreenState extends State<LoginScreen> {
         GlobalState().updateGlobalVariable(responseBody['isManager']);
         GlobalState().updateGlobalVariableEmail(email) ;
         _logger.info("Login successful ${GlobalState().isManager}");
-        Navigator.pushNamed(context, '/dashboard');
+        // if (GlobalState().isManager == 1) {
+          Navigator.pushNamed(context, '/dashboard');
+        // }
+        // else{
+        //   Navigator.pushNamed(context, '/assignedActivity');
+        // }
       } else {
         _logger.warning('Google login failed: ${response.body}');
         setState(() {

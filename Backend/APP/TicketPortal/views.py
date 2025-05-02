@@ -11,6 +11,9 @@ from django.core.cache import cache
 from datetime import timedelta
 import math
 from django.utils import timezone
+import base64
+from django.views.decorators.csrf import csrf_exempt
+
 @api_view(['POST'])
 def RaiseIssue(request) :
     # print(1) 
@@ -19,6 +22,12 @@ def RaiseIssue(request) :
     issue = request.data.get('issue')
     status = "Pending"
     category = request.data.get("category")
+    try : 
+        image = request.FILES.get('image')
+        image_data = image.read()  
+    except : 
+        image = None
+        image_data = None
     try:
         # Fetch the Users instance based on the email
         user = Users.objects.get(email=email)
@@ -30,6 +39,7 @@ def RaiseIssue(request) :
                 issue=issue,
                 status=status,
                 category=  category,
+                image_data = image_data,
             )
         return Response({'message': "Issue succesfully raised"}, status=200)
 
@@ -58,8 +68,12 @@ def GetTickets(request):
                 'category': ticket.category,
                 'issueDate': ticket.issueDate,
                 'status': ticket.status,
-                'email': ticket.email.email  # Fetch the email field from ForeignKey
+                'email': ticket.email.email,  # Fetch the email field from ForeignKey
+                'message' : ticket.closingMessage,
+                'closingDate' : ticket.closingDate
             })
+
+        print(data)
 
         return Response({'message': "Tickets fetched successfully", "data": data}, status=200)
 
@@ -156,15 +170,20 @@ def GetAllTickets(request):
             tickets = Tickets.objects.filter(email=worker , status = "Pending")  # Fix this line, you need to filter Tickets, not Users
             
             for ticket in tickets:
+                image_base64 = None
+                if ticket.image_data:
+                    image_base64 = base64.b64encode(ticket.image_data).decode('utf-8')
                 data.append({
                     'name' : worker.name,
                     'issue': ticket.issue,
                     'category': ticket.category,
                     'issueDate': ticket.issueDate,
-                    'id' : str(ticket.id)
+                    'id' : str(ticket.id),
+                    'imageData': image_base64,  # Now sending base64 encoded string
+                    'hasImage': ticket.image_data is not None 
                 })
 
-        print(data)
+        # print(data)
         return Response({'message': "Tickets fetched successfully", "data": data}, status=200)
 
     except Exception as e:
@@ -190,6 +209,7 @@ def UpdateTickets(request):
         ticket = Tickets.objects.filter(id = id).first()
         ticket.status = "Completed"
         ticket.closingMessage = message
+        print(message)
         ticket.closingDate = timezone.now()
         ticket.save()
         workers = Users.objects.filter(managerEmail = email)

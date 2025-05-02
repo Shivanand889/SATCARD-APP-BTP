@@ -11,3 +11,7 @@ class TaskSerializer(serializers.ModelSerializer):
     class Meta:
         model = Tasks
         fields = '__all__'
+class SuggestionsSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Suggestions
+        fields = '__all__'

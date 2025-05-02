@@ -27,3 +27,11 @@ class Tasks(models.Model):
     rain = models.IntegerField(default=0)
     humidity = models.IntegerField(default=0)
     wind = models.IntegerField(default=0)
+
+class Suggestions(models.Model):
+    id = models.AutoField(primary_key=True)
+    activityName = models.CharField(max_length=50, null=False, default='')
+    assignedDate = models.DateField(null=False, default=timezone.now)  # Default value for date
+    farmName = models.CharField(max_length=50, null=False, default='')
+    status = models.CharField(max_length=50, null=False, default='Pending')
+    email = models.ForeignKey(Users, on_delete=models.CASCADE, to_field='email', default='')

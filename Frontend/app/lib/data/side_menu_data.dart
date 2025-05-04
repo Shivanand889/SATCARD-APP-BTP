@@ -29,6 +29,9 @@ class SideMenuData {
 
     if (GlobalState().isManager == 1)
       MenuModel(icon: Icons.support, title: 'Workers Analytics'),
+
+    if (GlobalState().isManager == 1)
+      MenuModel(icon: Icons.add, title: 'Disease Detection'),
     MenuModel(icon: Icons.logout, title: 'SignOut'),
   ];
 

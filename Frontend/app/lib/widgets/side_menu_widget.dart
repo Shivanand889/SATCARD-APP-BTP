@@ -1,6 +1,7 @@
 import 'dart:convert'; // For JSON decoding
 import 'package:app/screens/assigned_activity.dart';
 import 'package:app/screens/solving_ticket.dart';
+import 'package:app/screens/diseaseDetection.dart';
 import 'package:app/screens/welcome_screen.dart';
 import 'package:app/screens/raise_ticket.dart';
 import 'package:app/screens/customized_report.dart';
@@ -257,6 +258,8 @@ class _SideMenuWidgetState extends State<SideMenuWidget> {
       return AnalyticsPage();
     case 'Workers Analytics':
       return AnalyticsDashboardPage();
+    case 'Disease Detection':
+      return DiseaseDetectionScreen();
     case 'SignOut': 
           WidgetsBinding.instance.addPostFrameCallback((_) {
         Navigator.pushAndRemoveUntil(

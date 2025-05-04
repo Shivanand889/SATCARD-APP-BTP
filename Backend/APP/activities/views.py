@@ -17,8 +17,15 @@ import torch.nn as nn
 import torch.optim as optim
 from django.utils import timezone
 from datetime import date, timedelta, datetime
+from tensorflow.keras.preprocessing import image as keras_image
+from tensorflow.keras.models import load_model
+from tensorflow.keras import layers, Sequential
+from PIL import Image
+import numpy as np
+import io
+import tensorflow as tf
 
-
+# from keras.models import load_model
 class LSTMModel(nn.Module):
     def __init__(self, input_dim, hidden_dim, output_dim, num_layers, dropout_prob=0.5):
         super(LSTMModel, self).__init__()
@@ -617,3 +624,70 @@ def CustomizedReports(request):
     except Exception as e:
         print("Error in GetTasks:", str(e))
         return Response({ "message": "unsuccesfull", "data" : []}, status=500)
+
+
+classes = ['Apple___Apple_scab',
+ 'Apple___Black_rot',
+ 'Apple___Cedar_apple_rust',
+ 'Apple___healthy',
+ 'Blueberry___healthy',
+ 'Cherry_(including_sour)___Powdery_mildew',
+ 'Cherry_(including_sour)___healthy',
+ 'Corn_(maize)___Cercospora_leaf_spot Gray_leaf_spot',
+ 'Corn_(maize)___Common_rust_',
+ 'Corn_(maize)___Northern_Leaf_Blight',
+ 'Corn_(maize)___healthy',
+ 'Grape___Black_rot',
+ 'Grape___Esca_(Black_Measles)',
+ 'Grape___Leaf_blight_(Isariopsis_Leaf_Spot)',
+ 'Grape___healthy',
+ 'Orange___Haunglongbing_(Citrus_greening)',
+ 'Peach___Bacterial_spot',
+ 'Peach___healthy',
+ 'Pepper,_bell___Bacterial_spot',
+ 'Pepper,_bell___healthy',
+ 'Potato___Early_blight',
+ 'Potato___Late_blight',
+ 'Potato___healthy',
+ 'Raspberry___healthy',
+ 'Soybean___healthy',
+ 'Squash___Powdery_mildew']
+
+@api_view(['POST'])
+def DiseaseDetection(request):
+    try:
+        image_file = request.FILES.get('image')
+        if image_file is None:
+            return Response({'error': 'No image uploaded'}, status=400)
+
+        # Read image as bytes and convert to PIL Image
+        img_data = image_file.read()
+        image = Image.open(io.BytesIO(img_data)).convert('RGB')  # Ensure 3 channels (RGB)
+
+        try:
+            model = load_model("activities/diseaseDetections.keras")
+        except Exception as e:
+            print(f"Model loading error: {e}")
+            return Response({'confidence': 0}, status=500)
+
+        # Preprocess image
+        IMAGE_SIZE = 256
+        img = image.resize((IMAGE_SIZE, IMAGE_SIZE))  # Resize image
+        img_array = tf.keras.utils.img_to_array(img)
+        img_array = tf.expand_dims(img_array, axis=0)  # Add batch dimension
+
+        # (Optional) Display image for debugging
+        # plt.imshow(img_array[0].astype("uint8"))
+        # plt.show()
+
+        # Prediction
+        pred = model.predict(img_array)
+        predicted_class = classes[int(np.argmax(pred))]
+         
+        return Response({
+            'confidence': predicted_class  # Convert NumPy array to list for JSON serialization
+        })
+
+    except Exception as e:
+        print(f"Error during prediction: {e}")
+        return Response({'error': str(e)}, status=500)
